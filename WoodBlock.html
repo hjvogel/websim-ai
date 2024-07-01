@@ -1,0 +1,289 @@
+<html><head><base href="https://WoodBlock.game">
+<title>WoodBlock - Eco-Friendly 8x8 Wooden Puzzle</title>
+<style>
+  body {
+    font-family: 'Courier New', monospace;
+    background-color: #f0e6d2;
+    color: #3e2723;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+  }
+  header {
+    background-color: #8d6e63;
+    width: 100%;
+    padding: 20px 0;
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  h1 {
+    font-size: 2.5em;
+    margin: 0;
+    text-shadow: 2px 2px #5d4037;
+    color: #ffccbc;
+    flex-grow: 1;
+  }
+  .score-container {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #ffccbc;
+    margin-right: 20px;
+  }
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 30px;
+    width: 90%;
+    max-width: 450px;
+  }
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    background-color: #5d4037;
+    padding: 5px;
+    border-radius: 5px;
+  }
+  .grid-cell {
+    width: 50px;
+    height: 50px;
+    background-color: #d7ccc8;
+    border-radius: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .piece-selection {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+  }
+  .wood-piece {
+    cursor: move;
+    transition: transform 0.3s ease;
+  }
+  .wood-piece:hover {
+    transform: scale(1.05);
+  }
+  .wood-block {
+    width: 50px;
+    height: 50px;
+    background-color: #d7a878;
+    border: 2px solid #8b4513;
+    display: inline-block;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+  }
+  .wood-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      linear-gradient(45deg, transparent 40%, rgba(139, 69, 19, 0.1) 40%, rgba(139, 69, 19, 0.1) 60%, transparent 60%),
+      linear-gradient(-45deg, transparent 40%, rgba(139, 69, 19, 0.1) 40%, rgba(139, 69, 19, 0.1) 60%, transparent 60%);
+    background-size: 10px 10px;
+  }
+  .piece-1x1 { width: 50px; height: 50px; }
+  .piece-1x2 { width: 50px; height: 102px; }
+  .piece-1x3 { width: 50px; height: 154px; }
+  .piece-1x4 { width: 50px; height: 206px; }
+  .piece-2x1 { width: 102px; height: 50px; }
+  .piece-3x1 { width: 154px; height: 50px; }
+  .piece-4x1 { width: 206px; height: 50px; }
+  .piece-2x2 { width: 102px; height: 102px; }
+  .piece-3x3 { width: 154px; height: 154px; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>WoodBlock</h1>
+    <div class="score-container">
+      Score: <span id="score">0</span>
+    </div>
+  </header>
+
+  <div class="game-container">
+    <div class="game-grid" id="gameGrid">
+      <!-- Grid cells will be dynamically generated -->
+    </div>
+    <div class="piece-selection" id="pieceSelection">
+      <!-- Pieces will be dynamically generated -->
+    </div>
+  </div>
+
+  <script>
+    const GRID_SIZE = 8;
+    const PIECE_TYPES = ['1x1', '1x2', '1x3', '1x4', '2x1', '3x1', '4x1', '2x2', '3x3'];
+    let score = 0;
+    let placedBlocks = 0;
+
+    function initializeGame() {
+      createGrid();
+      createPieces();
+    }
+
+    function createGrid() {
+      const gameGrid = document.getElementById('gameGrid');
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          cell.setAttribute('data-x', x);
+          cell.setAttribute('data-y', y);
+          cell.addEventListener('dragover', dragOver);
+          cell.addEventListener('drop', drop);
+          gameGrid.appendChild(cell);
+        }
+      }
+    }
+
+    function createPieces() {
+      const pieceSelection = document.getElementById('pieceSelection');
+      for (let i = 0; i < 3; i++) {
+        const piece = createRandomPiece();
+        pieceSelection.appendChild(piece);
+      }
+    }
+
+    function createRandomPiece() {
+      const pieceType = PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)];
+      const piece = document.createElement('div');
+      piece.className = `wood-piece piece-${pieceType}`;
+      piece.setAttribute('data-shape', pieceType);
+      piece.draggable = true;
+      piece.addEventListener('dragstart', dragStart);
+
+      const [width, height] = pieceType.split('x').map(Number);
+      for (let i = 0; i < width * height; i++) {
+        const block = document.createElement('div');
+        block.className = 'wood-block';
+        piece.appendChild(block);
+      }
+
+      return piece;
+    }
+
+    function dragStart(e) {
+      e.dataTransfer.setData('text/plain', e.target.getAttribute('data-shape'));
+      e.dataTransfer.setDragImage(e.target, 0, 0);
+    }
+
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    function drop(e) {
+      e.preventDefault();
+      const shape = e.dataTransfer.getData('text/plain');
+      const targetCell = document.elementFromPoint(e.clientX, e.clientY).closest('.grid-cell');
+      if (targetCell && canPlacePiece(targetCell, shape)) {
+        placePiece(targetCell, shape);
+        updateScore(10 * shape.split('x').reduce((a, b) => a * b, 1));
+        replacePiece(shape);
+        checkAndClearLines();
+      }
+    }
+
+    function canPlacePiece(cell, shape) {
+      const [width, height] = shape.split('x').map(Number);
+      const x = parseInt(cell.getAttribute('data-x'));
+      const y = parseInt(cell.getAttribute('data-y'));
+
+      if (x + width > GRID_SIZE || y + height > GRID_SIZE) return false;
+
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          const checkCell = document.querySelector(`.grid-cell[data-x="${x+i}"][data-y="${y+j}"]`);
+          if (checkCell.hasChildNodes()) return false;
+        }
+      }
+      return true;
+    }
+
+    function placePiece(cell, shape) {
+      const [width, height] = shape.split('x').map(Number);
+      const x = parseInt(cell.getAttribute('data-x'));
+      const y = parseInt(cell.getAttribute('data-y'));
+
+      for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+          const targetCell = document.querySelector(`.grid-cell[data-x="${x+i}"][data-y="${y+j}"]`);
+          const block = document.createElement('div');
+          block.className = 'wood-block';
+          targetCell.appendChild(block);
+        }
+      }
+    }
+
+    function replacePiece(shape) {
+      const pieceSelection = document.getElementById('pieceSelection');
+      const usedPiece = document.querySelector(`.wood-piece[data-shape="${shape}"]`);
+      pieceSelection.removeChild(usedPiece);
+      pieceSelection.appendChild(createRandomPiece());
+    }
+
+    function checkAndClearLines() {
+      let clearedLines = 0;
+      let clearedCells = new Set();
+
+      // Check rows
+      for (let y = 0; y < GRID_SIZE; y++) {
+        if (isLineComplete(y, 'row')) {
+          for (let x = 0; x < GRID_SIZE; x++) {
+            clearedCells.add(`${x},${y}`);
+          }
+          clearedLines++;
+        }
+      }
+
+      // Check columns
+      for (let x = 0; x < GRID_SIZE; x++) {
+        if (isLineComplete(x, 'column')) {
+          for (let y = 0; y < GRID_SIZE; y++) {
+            clearedCells.add(`${x},${y}`);
+          }
+          clearedLines++;
+        }
+      }
+
+      // Clear all marked cells
+      clearedCells.forEach(coords => {
+        const [x, y] = coords.split(',').map(Number);
+        const cell = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+        cell.innerHTML = '';
+      });
+
+      if (clearedLines > 0) {
+        updateScore(100 * clearedLines);
+      }
+    }
+
+    function isLineComplete(index, type) {
+      for (let i = 0; i < GRID_SIZE; i++) {
+        const cell = document.querySelector(type === 'row' 
+          ? `.grid-cell[data-x="${i}"][data-y="${index}"]`
+          : `.grid-cell[data-x="${index}"][data-y="${i}"]`);
+        if (!cell.hasChildNodes()) return false;
+      }
+      return true;
+    }
+
+    function updateScore(points) {
+      score += points;
+      document.getElementById('score').textContent = score;
+    }
+
+    initializeGame();
+  </script>
+</body></html>

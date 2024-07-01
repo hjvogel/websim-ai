@@ -1,0 +1,293 @@
+<html><head><base href="https://github.com/jakesgordon/javascript-tetris%20run"><title>JavaScript Tetris - Play Now!</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  #tetris {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+  }
+  #menu {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 20px;
+  }
+  #canvas {
+    display: inline-block;
+    vertical-align: top;
+    background-color: #f8f8f8;
+    border: 2px solid #333;
+  }
+  #upcoming {
+    display: block;
+    margin: 0 auto;
+    background-color: #e0e0e0;
+  }
+  #score, #rows, #level {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px 0;
+  }
+  #start, #github-link {
+    margin-top: 20px;
+  }
+  #start a, #github-link {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+    cursor: pointer;
+  }
+  #start a:hover, #github-link:hover {
+    background-color: #45a049;
+  }
+  #github-link {
+    background-color: #333;
+  }
+  #github-link:hover {
+    background-color: #555;
+  }
+</style>
+</head>
+<body>
+  <div id="tetris">
+    <div id="menu">
+      <p><canvas id="upcoming"></canvas></p>
+      <p id="score">Score: <span>00000</span></p>
+      <p id="rows">Rows: <span>0</span></p>
+      <p id="level">Level: <span>1</span></p>
+      <p id="start"><a href="#">Press Space to Play</a></p>
+      <p id="github-link">View on GitHub</p>
+    </div>
+    <canvas id="canvas" width="300" height="600"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const upcomingCanvas = document.getElementById('upcoming');
+    const uctx = upcomingCanvas.getContext('2d');
+    const scoreElement = document.querySelector('#score span');
+    const rowsElement = document.querySelector('#rows span');
+    const levelElement = document.querySelector('#level span');
+    const startButton = document.querySelector('#start a');
+    const githubLink = document.getElementById('github-link');
+
+    const COLS = 10;
+    const ROWS = 20;
+    const BLOCK_SIZE = 30;
+
+    const SHAPES = [
+      [[1,1,1,1]],
+      [[1,1],[1,1]],
+      [[1,1,1],[0,1,0]],
+      [[1,1,1],[1,0,0]],
+      [[1,1,1],[0,0,1]],
+      [[1,1,0],[0,1,1]],
+      [[0,1,1],[1,1,0]]
+    ];
+
+    const COLORS = ['cyan', 'yellow', 'purple', 'green', 'red', 'blue', 'orange'];
+
+    let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+    let currentPiece;
+    let nextPiece;
+    let score = 0;
+    let rows = 0;
+    let level = 1;
+    let gameOver = false;
+    let dropCounter = 0;
+    let dropInterval = 1000; // Start with 1 second interval
+
+    function drawBlock(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+    }
+
+    function drawBoard() {
+      board.forEach((row, y) => {
+        row.forEach((value, x) => {
+          if (value) drawBlock(x, y, COLORS[value - 1]);
+        });
+      });
+    }
+
+    function drawPiece(piece, ctx) {
+      piece.shape.forEach((row, y) => {
+        row.forEach((value, x) => {
+          if (value) {
+            ctx.fillStyle = COLORS[piece.color];
+            ctx.fillRect((piece.x + x) * BLOCK_SIZE, (piece.y + y) * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+          }
+        });
+      });
+    }
+
+    function createPiece() {
+      const shapeIndex = Math.floor(Math.random() * SHAPES.length);
+      return {
+        shape: SHAPES[shapeIndex],
+        color: shapeIndex,
+        x: Math.floor(COLS / 2) - Math.floor(SHAPES[shapeIndex][0].length / 2),
+        y: 0
+      };
+    }
+
+    function collision(piece) {
+      return piece.shape.some((row, dy) => 
+        row.some((value, dx) => 
+          value && (board[piece.y + dy] && board[piece.y + dy][piece.x + dx]) !== 0
+        )
+      );
+    }
+
+    function merge(piece) {
+      piece.shape.forEach((row, y) => {
+        row.forEach((value, x) => {
+          if (value) board[piece.y + y][piece.x + x] = piece.color + 1;
+        });
+      });
+    }
+
+    function rotate(piece) {
+      const rotated = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
+      if (!collision({...piece, shape: rotated})) piece.shape = rotated;
+    }
+
+    function moveDown() {
+      currentPiece.y++;
+      if (collision(currentPiece)) {
+        currentPiece.y--;
+        merge(currentPiece);
+        clearLines();
+        if (currentPiece.y === 0) {
+          gameOver = true;
+          return;
+        }
+        currentPiece = nextPiece;
+        nextPiece = createPiece();
+      }
+      dropCounter = 0;
+    }
+
+    function clearLines() {
+      let linesCleared = 0;
+      board.forEach((row, y) => {
+        if (row.every(value => value !== 0)) {
+          board.splice(y, 1);
+          board.unshift(Array(COLS).fill(0));
+          linesCleared++;
+        }
+      });
+      if (linesCleared > 0) {
+        rows += linesCleared;
+        score += linesCleared * 100 * level;
+        level = Math.floor(rows / 10) + 1;
+        dropInterval = Math.max(100, 1000 - (level - 1) * 100); // Speed up as level increases
+        updateScore();
+      }
+    }
+
+    function updateScore() {
+      scoreElement.textContent = score.toString().padStart(5, '0');
+      rowsElement.textContent = rows;
+      levelElement.textContent = level;
+    }
+
+    function drawNextPiece() {
+      uctx.clearRect(0, 0, upcomingCanvas.width, upcomingCanvas.height);
+      drawPiece({...nextPiece, x: 1, y: 1}, uctx);
+    }
+
+    let lastTime = 0;
+    function gameLoop(time = 0) {
+      const deltaTime = time - lastTime;
+      lastTime = time;
+
+      dropCounter += deltaTime;
+      if (dropCounter > dropInterval) {
+        moveDown();
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBoard();
+      drawPiece(currentPiece, ctx);
+      drawNextPiece();
+
+      if (!gameOver) {
+        requestAnimationFrame(gameLoop);
+      } else {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.font = '30px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+      }
+    }
+
+    function startGame() {
+      board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+      currentPiece = createPiece();
+      nextPiece = createPiece();
+      score = 0;
+      rows = 0;
+      level = 1;
+      gameOver = false;
+      dropCounter = 0;
+      dropInterval = 1000;
+      updateScore();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', event => {
+      if (gameOver) return;
+      switch(event.keyCode) {
+        case 37: // left
+          if (!collision({...currentPiece, x: currentPiece.x - 1})) currentPiece.x--;
+          break;
+        case 39: // right
+          if (!collision({...currentPiece, x: currentPiece.x + 1})) currentPiece.x++;
+          break;
+        case 40: // down
+          moveDown();
+          break;
+        case 38: // up
+          rotate(currentPiece);
+          break;
+        case 32: // space
+          while (!collision({...currentPiece, y: currentPiece.y + 1})) {
+            currentPiece.y++;
+            score += 1;
+          }
+          moveDown();
+          break;
+      }
+    });
+
+    startButton.addEventListener('click', event => {
+      event.preventDefault();
+      startGame();
+    });
+
+    githubLink.addEventListener('click', () => {
+      window.open("https://github.com/jakesgordon/javascript-tetris", "_blank");
+    });
+
+    upcomingCanvas.width = upcomingCanvas.height = 4 * BLOCK_SIZE;
+  </script>
+</body>
+</html>

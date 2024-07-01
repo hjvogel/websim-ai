@@ -1,0 +1,326 @@
+<html><head><base href="https://magicworm.game/" />
+<title>Magic Worm - Retro Arcade Adventure</title>
+<style>
+  body {
+    background-color: #000;
+    color: #0f0;
+    font-family: 'VT323', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+  }
+  canvas {
+    border: 4px solid #0f0;
+    box-shadow: 0 0 20px #0f0;
+  }
+  #controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    background-color: #0f0;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  button:hover {
+    background-color: #0a0;
+    transform: scale(1.1);
+  }
+  #score {
+    margin-top: 20px;
+    font-size: 24px;
+  }
+  .laser {
+    position: absolute;
+    background-color: #ff0;
+    width: 2px;
+    height: 10px;
+    transition: all 0.9s linear;
+  }
+  #restartBtn {
+    background-color: #f00;
+    color: #fff;
+    margin-top: 10px;
+  }
+  #restartBtn:hover {
+    background-color: #a00;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+</head>
+<body>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
+<div id="controls">
+  <button id="leftBtn">Left</button>
+  <button id="rightBtn">Right</button>
+  <button id="upBtn">Up</button>
+  <button id="downBtn">Down</button>
+  <button id="fireBtn">Fire</button>
+</div>
+<div id="score">Score: <span id="scoreValue">0</span></div>
+<button id="restartBtn">Restart Game</button>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const GRID_SIZE = 20;
+const COLS = canvas.width / GRID_SIZE;
+const ROWS = canvas.height / GRID_SIZE;
+const GAME_SPEED = 3; // Slow down factor for overall game
+const WORM_SPEED = 4; // Additional slow down factor for worm
+
+let score = 0;
+let player = { x: COLS / 2, y: ROWS - 2 };
+let bullets = [];
+let worm = [];
+let mushrooms = [];
+let frameCount = 0;
+let wormDirection = 1; // 1 for down, -1 for up
+
+function initGame() {
+  score = 0;
+  player = { x: COLS / 2, y: ROWS - 2 };
+  bullets = [];
+  worm = [];
+  mushrooms = [];
+  frameCount = 0;
+  wormDirection = 1;
+
+  // Initialize worm
+  for (let i = 0; i < 12; i++) {
+    worm.push({ x: i, y: 0 });
+  }
+
+  // Place random mushrooms
+  for (let i = 0; i < 30; i++) {
+    mushrooms.push({
+      x: Math.floor(Math.random() * COLS),
+      y: Math.floor(Math.random() * (ROWS - 4)) + 2,
+      hits: 0
+    });
+  }
+
+  document.getElementById('scoreValue').textContent = score;
+}
+
+function drawGrid() {
+  ctx.strokeStyle = '#030';
+  ctx.beginPath();
+  for (let x = 0; x <= canvas.width; x += GRID_SIZE) {
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+  }
+  for (let y = 0; y <= canvas.height; y += GRID_SIZE) {
+    ctx.moveTo(0, y);
+    ctx.lineTo(canvas.width, y);
+  }
+  ctx.stroke();
+}
+
+function drawPlayer() {
+  ctx.fillStyle = '#0f0';
+  ctx.fillRect(player.x * GRID_SIZE, player.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+  ctx.fillStyle = '#000';
+  ctx.fillRect(player.x * GRID_SIZE + 4, player.y * GRID_SIZE + 4, GRID_SIZE - 8, GRID_SIZE - 8);
+}
+
+function drawBullets() {
+  ctx.fillStyle = '#ff0';
+  bullets.forEach(bullet => {
+    ctx.fillRect(bullet.x * GRID_SIZE + GRID_SIZE/4, bullet.y * GRID_SIZE, GRID_SIZE/2, GRID_SIZE/2);
+  });
+}
+
+function drawWorm() {
+  worm.forEach((segment, index) => {
+    ctx.fillStyle = index === 0 ? '#f00' : `hsl(${index * 30 % 360}, 100%, 50%)`;
+    ctx.fillRect(segment.x * GRID_SIZE, segment.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+    if (index === 0) {
+      ctx.fillStyle = '#ff0';
+      ctx.fillRect(segment.x * GRID_SIZE + GRID_SIZE / 4, segment.y * GRID_SIZE + GRID_SIZE / 4, GRID_SIZE / 2, GRID_SIZE / 2);
+    }
+  });
+}
+
+function drawMushrooms() {
+  mushrooms.forEach(mushroom => {
+    if (mushroom.hits === 0) {
+      ctx.fillStyle = '#a0f';
+    } else if (mushroom.hits === 1) {
+      ctx.fillStyle = '#70a';
+    }
+    ctx.fillRect(mushroom.x * GRID_SIZE, mushroom.y * GRID_SIZE, GRID_SIZE, GRID_SIZE);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(mushroom.x * GRID_SIZE + 2, mushroom.y * GRID_SIZE + 2, GRID_SIZE - 4, GRID_SIZE - 4);
+  });
+}
+
+function updateGame() {
+  frameCount++;
+  if (frameCount % GAME_SPEED !== 0) return;
+
+  // Move bullets
+  bullets = bullets.filter(bullet => {
+    bullet.y--;
+    return bullet.y >= 0;
+  });
+
+  // Move worm
+  if (frameCount % (GAME_SPEED * WORM_SPEED) === 0 && worm.length > 0) {
+    const head = worm[0];
+    let newHead = { x: head.x + (Math.random() < 0.5 ? 1 : -1), y: head.y + wormDirection };
+
+    if (newHead.x < 0) newHead.x = COLS - 1;
+    if (newHead.x >= COLS) newHead.x = 0;
+
+    // Change direction if hit bottom or top
+    if (newHead.y >= ROWS || newHead.y < 0) {
+      wormDirection *= -1;
+      newHead.y = head.y + wormDirection;
+    }
+
+    worm.unshift(newHead);
+    worm.pop();
+  }
+
+  // Check collisions
+  bullets.forEach((bullet, bulletIndex) => {
+    for (let i = worm.length - 1; i >= 0; i--) {
+      if (bullet.x === worm[i].x && bullet.y === worm[i].y) {
+        bullets.splice(bulletIndex, 1);
+        worm.splice(i);
+        score += 10;
+        break;
+      }
+    }
+
+    mushrooms.forEach((mushroom, mushroomIndex) => {
+      if (bullet.x === mushroom.x && bullet.y === mushroom.y) {
+        bullets.splice(bulletIndex, 1);
+        mushroom.hits++;
+        if (mushroom.hits >= 2) {
+          mushrooms.splice(mushroomIndex, 1);
+          score += 5;
+        } else {
+          score += 1;
+        }
+      }
+    });
+  });
+
+  // Regenerate worm if it's destroyed
+  if (worm.length === 0) {
+    for (let i = 0; i < 12; i++) {
+      worm.push({ x: i, y: 0 });
+    }
+    wormDirection = 1;
+  }
+
+  // Update score
+  document.getElementById('scoreValue').textContent = score;
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawGrid();
+  drawPlayer();
+  drawBullets();
+  drawWorm();
+  drawMushrooms();
+  updateGame();
+  requestAnimationFrame(gameLoop);
+}
+
+initGame();
+gameLoop();
+
+// Controls
+document.getElementById('leftBtn').addEventListener('click', () => movePlayer('left'));
+document.getElementById('rightBtn').addEventListener('click', () => movePlayer('right'));
+document.getElementById('upBtn').addEventListener('click', () => movePlayer('up'));
+document.getElementById('downBtn').addEventListener('click', () => movePlayer('down'));
+document.getElementById('fireBtn').addEventListener('click', fireLaser);
+document.getElementById('restartBtn').addEventListener('click', initGame);
+
+function movePlayer(direction) {
+  switch(direction) {
+    case 'left':
+      if (player.x > 0) player.x--;
+      break;
+    case 'right':
+      if (player.x < COLS - 1) player.x++;
+      break;
+    case 'up':
+      if (player.y > ROWS - 4) player.y--;
+      break;
+    case 'down':
+      if (player.y < ROWS - 1) player.y++;
+      break;
+  }
+}
+
+function fireLaser() {
+  bullets.push({ x: player.x, y: player.y - 1 });
+  
+  // Create visual laser effect
+  const laser = document.createElement('div');
+  laser.className = 'laser';
+  laser.style.left = `${player.x * GRID_SIZE + GRID_SIZE / 2}px`;
+  laser.style.bottom = `${(ROWS - player.y) * GRID_SIZE}px`;
+  document.body.appendChild(laser);
+
+  // Animate laser
+  setTimeout(() => {
+    laser.style.height = `${canvas.height}px`;
+    laser.style.opacity = '0';
+  }, 50 * GAME_SPEED);
+
+  // Remove laser element
+  setTimeout(() => {
+    document.body.removeChild(laser);
+  }, 300 * GAME_SPEED);
+
+  // Play laser sound
+  const laserSound = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAiBUAAIgVAAABAAgAZGF0YQAAAAA=');
+  laserSound.play();
+}
+
+// Keyboard controls
+document.addEventListener('keydown', (e) => {
+  switch(e.key) {
+    case 'ArrowLeft':
+      movePlayer('left');
+      break;
+    case 'ArrowRight':
+      movePlayer('right');
+      break;
+    case 'ArrowUp':
+      movePlayer('up');
+      break;
+    case 'ArrowDown':
+      movePlayer('down');
+      break;
+    case ' ':
+      fireLaser();
+      break;
+    case 'r':
+      initGame();
+      break;
+  }
+});
+</script>
+</body>
+</html>

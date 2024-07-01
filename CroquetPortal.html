@@ -1,0 +1,227 @@
+<html><head><base href="https://websim.ai" /><title>Croquet.io 3D Showroom</title><style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Arial', sans-serif;
+    background-color: #000;
+    color: #ffffff;
+    overflow: hidden;
+  }
+  .showroom {
+    width: 100%;
+    height: 100%;
+    perspective: 3000px;
+    transform-style: preserve-3d;
+  }
+  .wall {
+    position: absolute;
+    width: 100%;
+    height: 600%;
+    transform-style: preserve-3d;
+    transform: translateZ(-2000px) translateY(-41.67%);
+    background: linear-gradient(180deg, #1a1a1a, #2c3e50, #1a1a1a);
+  }
+  .floor {
+    position: absolute;
+    width: 400%;
+    height: 400%;
+    transform: rotateX(90deg) translateZ(600px) translateX(-37.5%) translateY(-37.5%);
+    background-image: 
+      linear-gradient(#4a3728, #4a3728),
+      linear-gradient(90deg, rgba(0,0,0,.2) 1px, transparent 1px),
+      linear-gradient(rgba(0,0,0,.2) 1px, transparent 1px);
+    background-size: 200px 200px, 200px 200px, 200px 200px;
+    background-position: 0 0, 100px 100px, 100px 100px;
+  }
+  .floor::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%),
+                linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%);
+    background-size: 400px 400px;
+    background-position: 0 0, 200px 200px;
+    pointer-events: none;
+  }
+  .ceiling {
+    position: absolute;
+    width: 400%;
+    height: 400%;
+    transform: rotateX(-90deg) translateZ(-3000px) translateX(-37.5%) translateY(-37.5%);
+    background: radial-gradient(circle, #1a1a1a, #0a0a0a);
+  }
+  .portal-container {
+    position: absolute;
+    width: 600px;
+    height: 1000px;
+    transform-style: preserve-3d;
+    transform: translateZ(-1000px) translateY(30%);
+    transition: transform 0.3s ease;
+  }
+  .portal {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #3498db, #8e44ad);
+    border-radius: 40px 40px 0 0;
+    box-shadow: 0 0 60px rgba(52, 152, 219, 0.7);
+    transform-style: preserve-3d;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  .portal-content {
+    text-align: center;
+    color: white;
+    font-size: 48px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  }
+  .portal-frame {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    right: 30px;
+    bottom: 0;
+    border: 12px solid rgba(255,255,255,0.5);
+    border-radius: 30px 30px 0 0;
+    pointer-events: none;
+  }
+  .portal-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .portal:hover .portal-glow {
+    opacity: 1;
+  }
+  .portal-side {
+    position: absolute;
+    background: rgba(52, 152, 219, 0.7);
+    transform-style: preserve-3d;
+    box-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
+  }
+  .portal-side.left, .portal-side.right {
+    width: 100px;
+    height: 100%;
+    top: 0;
+  }
+  .portal-side.top {
+    width: 100%;
+    height: 100px;
+    left: 0;
+  }
+  .portal-side.left { left: -100px; transform: rotateY(-90deg); }
+  .portal-side.right { right: -100px; transform: rotateY(90deg); }
+  .portal-side.top { top: -100px; transform: rotateX(-90deg); }
+  .sculpture {
+    position: absolute;
+    width: 400px;
+    height: 600px;
+    transform-style: preserve-3d;
+    animation: rotateSculpture 20s infinite linear;
+  }
+  .sculpture-part {
+    position: absolute;
+    background: linear-gradient(45deg, #e74c3c, #f39c12);
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(231, 76, 60, 0.7);
+  }
+  @keyframes rotateSculpture {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+  }
+  #portal-status {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0,0,0,0.7);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+</style></head><body>
+  <div class="showroom">
+    <div class="wall"></div>
+    <div class="floor"></div>
+    <div class="ceiling"></div>
+    <div class="portal-container">
+      <div class="portal" onclick="openPortal()">
+        <div class="portal-frame"></div>
+        <div class="portal-glow"></div>
+        <div class="portal-content">
+          Enter<br>Croquet<br>Microverse
+        </div>
+      </div>
+      <div class="portal-side left"></div>
+      <div class="portal-side right"></div>
+      <div class="portal-side top"></div>
+    </div>
+    <div class="sculpture">
+      <div class="sculpture-part" style="width: 100px; height: 300px; transform: translateX(-150px) translateY(-150px) translateZ(50px) rotateY(0deg);"></div>
+      <div class="sculpture-part" style="width: 100px; height: 300px; transform: translateX(150px) translateY(-150px) translateZ(50px) rotateY(90deg);"></div>
+      <div class="sculpture-part" style="width: 100px; height: 300px; transform: translateX(-50px) translateY(-150px) translateZ(-150px) rotateY(45deg);"></div>
+      <div class="sculpture-part" style="width: 200px; height: 100px; transform: translateX(-100px) translateY(100px) translateZ(0px) rotateX(60deg);"></div>
+    </div>
+  </div>
+  <div id="portal-status"></div>
+  <script>
+    function openPortal() {
+      const portalURL = "https://holgerjvogel.de/?q=a64i7cz4uw#pw=_0mcE-KPBHNUsSe7dSVEWA";
+      const portalWindow = window.open(portalURL, "_blank");
+      
+      const statusElement = document.getElementById('portal-status');
+      if (portalWindow) {
+        statusElement.textContent = 'Portal opened successfully! Check your new browser window or tab.';
+      } else {
+        statusElement.textContent = 'Failed to open the portal. Please check your pop-up blocker settings and try again.';
+      }
+      statusElement.style.opacity = 1;
+      setTimeout(() => {
+        statusElement.style.opacity = 0;
+      }, 3000);
+    }
+
+    // Add some 3D effect on mouse move
+    const showroom = document.querySelector('.showroom');
+    const wall = document.querySelector('.wall');
+    const portalContainer = document.querySelector('.portal-container');
+    const sculpture = document.querySelector('.sculpture');
+
+    document.addEventListener('mousemove', (e) => {
+      const xAxis = (window.innerWidth / 2 - e.pageX) / 60;
+      const yAxis = (window.innerHeight / 2 - e.pageY) / 60;
+      
+      showroom.style.transform = `rotateY(${xAxis}deg) rotateX(${-yAxis}deg)`;
+      wall.style.transform = `translateZ(-2000px) translateY(-41.67%) rotateY(${-xAxis * 0.5}deg) rotateX(${yAxis * 0.5}deg)`;
+      portalContainer.style.transform = `translateZ(-1000px) translateY(30%) rotateY(${xAxis * 1.5}deg) rotateX(${-yAxis * 1.5}deg)`;
+      sculpture.style.transform = `translateX(-800px) translateY(600px) translateZ(-800px) rotateY(${-xAxis * 2}deg) rotateX(${yAxis * 2}deg)`;
+    });
+
+    // Position the portal and sculpture in the 3D space
+    function positionElements() {
+      const portalContainer = document.querySelector('.portal-container');
+      portalContainer.style.left = 'calc(50% - 300px)';
+      portalContainer.style.bottom = '0';
+
+      const sculpture = document.querySelector('.sculpture');
+      sculpture.style.left = 'calc(50% + 400px)';
+      sculpture.style.bottom = '-160px';
+    }
+
+    window.addEventListener('load', positionElements);
+    window.addEventListener('resize', positionElements);
+  </script>
+</body></html>

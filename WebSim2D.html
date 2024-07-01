@@ -1,0 +1,329 @@
+<html><head><base href="https://websim.ai/WebSim2D"><title>WebSim2D - Advanced 2D Robotics Simulator</title>
+<style>
+  body {
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+    color: #333;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  header {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  h1 {
+    margin: 0;
+    font-size: 2.5em;
+  }
+  .simulator {
+    display: flex;
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  }
+  .world-view {
+    flex: 2;
+    background-color: #ecf0f1;
+    border-right: 1px solid #bdc3c7;
+    height: 600px;
+    position: relative;
+  }
+  .controls {
+    flex: 0.8;
+    padding: 20px;
+    background-color: #fff;
+  }
+  .code-editor {
+    width: 100%;
+    height: 240px;
+    margin-bottom: 16px;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+    resize: vertical;
+  }
+  button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #2980b9;
+  }
+  .toolbox {
+    margin-top: 16px;
+    border-top: 1px solid #ddd;
+    padding-top: 16px;
+  }
+  .tool {
+    display: inline-block;
+    margin-right: 8px;
+    padding: 4px 8px;
+    background-color: #95a5a6;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  #simulationCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+  #console {
+    margin-top: 16px;
+    padding: 8px;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-family: monospace;
+    height: 80px;
+    overflow-y: auto;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>WebSim2D - Advanced 2D Robotics Simulator</h1>
+  </header>
+  <div class="container">
+    <div class="simulator">
+      <div class="world-view">
+        <canvas id="simulationCanvas" width="800" height="600"></canvas>
+      </div>
+      <div class="controls">
+        <textarea class="code-editor" placeholder="Write your robot code here...">
+// Advanced robot control code
+function exploreEnvironment() {
+  if (goal) {
+    // Calculate angle to goal
+    const dx = goal.x - robotX;
+    const dy = goal.y - robotY;
+    const angleToGoal = Math.atan2(dy, dx);
+    
+    // Calculate difference between current angle and angle to goal
+    let angleDiff = angleToGoal - robotAngle;
+    
+    // Normalize angle difference to [-PI, PI]
+    while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+    while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+    
+    if (Math.abs(angleDiff) > 0.1) {
+      // Turn towards goal
+      robot.setVelocity(0, angleDiff > 0 ? 0.5 : -0.5);
+    } else if (!robot.detectObstacle()) {
+      // Move towards goal
+      robot.setVelocity(0.5, 0);
+    } else {
+      // Obstacle avoidance
+      robot.setVelocity(0, -0.5);
+    }
+  } else {
+    // No goal, just explore
+    if (!robot.detectObstacle()) {
+      robot.setVelocity(0.5, 0);
+    } else {
+      robot.setVelocity(0, -0.5);
+    }
+  }
+}
+
+// Start exploration for 10 seconds
+robot.run(exploreEnvironment, 10000);
+        </textarea>
+        <button onclick="runSimulation()">Run Simulation</button>
+        <div class="toolbox">
+          <div class="tool" onclick="addObstacle()">Add Obstacle</div>
+          <div class="tool" onclick="addGoal()">Add Goal</div>
+          <div class="tool" onclick="clearWorld()">Clear World</div>
+        </div>
+        <div id="console"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('simulationCanvas');
+    const ctx = canvas.getContext('2d');
+    let robotX = 400;
+    let robotY = 300;
+    let robotAngle = 0;
+    let obstacles = [];
+    let goal = null;
+    let isRunning = false;
+    let simulationInterval;
+
+    const borderWidth = 16;
+    obstacles.push(
+      {x: 0, y: 0, width: canvas.width, height: borderWidth},
+      {x: 0, y: canvas.height - borderWidth, width: canvas.width, height: borderWidth},
+      {x: 0, y: 0, width: borderWidth, height: canvas.height},
+      {x: canvas.width - borderWidth, y: 0, width: borderWidth, height: canvas.height}
+    );
+
+    const robot = {
+      setVelocity: function(linear, angular) {
+        const newX = robotX + Math.cos(robotAngle) * linear * 5;
+        const newY = robotY + Math.sin(robotAngle) * linear * 5;
+        
+        if (newX > borderWidth && newX < canvas.width - borderWidth && 
+            newY > borderWidth && newY < canvas.height - borderWidth) {
+          robotX = newX;
+          robotY = newY;
+        }
+        
+        robotAngle += angular * 0.1;
+      },
+      detectObstacle: function() {
+        const detectionRadius = 30;
+        for (let obs of obstacles) {
+          if (robotX + detectionRadius > obs.x && robotX - detectionRadius < obs.x + obs.width &&
+              robotY + detectionRadius > obs.y && robotY - detectionRadius < obs.y + obs.height) {
+            return true;
+          }
+        }
+        return false;
+      },
+      run: function(controlFunction, duration) {
+        const startTime = Date.now();
+        const runInterval = setInterval(() => {
+          if (Date.now() - startTime < duration) {
+            controlFunction();
+            updateSimulation();
+          } else {
+            clearInterval(runInterval);
+            logToConsole('Robot run completed.');
+          }
+        }, 50);
+      }
+    };
+
+    function drawRobot() {
+      ctx.fillStyle = '#e74c3c';
+      ctx.beginPath();
+      ctx.arc(robotX, robotY, 20, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(robotX, robotY);
+      ctx.lineTo(robotX + 30 * Math.cos(robotAngle), robotY + 30 * Math.sin(robotAngle));
+      ctx.strokeStyle = '#c0392b';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    function drawObstacles() {
+      obstacles.forEach(obs => {
+        ctx.fillStyle = '#34495e';
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+      });
+    }
+
+    function drawGoal() {
+      if (goal) {
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.arc(goal.x, goal.y, 15, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+    }
+
+    function updateSimulation() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawObstacles();
+      drawGoal();
+      drawRobot();
+    }
+
+    function runSimulation() {
+      if (isRunning) {
+        clearInterval(simulationInterval);
+        isRunning = false;
+        document.querySelector('button').textContent = 'Run Simulation';
+        return;
+      }
+
+      const code = document.querySelector('.code-editor').value;
+      
+      try {
+        const simulationFunction = new Function('robot', 'goal', 'robotX', 'robotY', 'robotAngle', code);
+        
+        isRunning = true;
+        document.querySelector('button').textContent = 'Stop Simulation';
+        
+        simulationInterval = setInterval(() => {
+          simulationFunction(robot, goal, robotX, robotY, robotAngle);
+          updateSimulation();
+        }, 50);
+
+        setTimeout(() => {
+          clearInterval(simulationInterval);
+          isRunning = false;
+          document.querySelector('button').textContent = 'Run Simulation';
+          logToConsole('Simulation completed after 10 seconds.');
+        }, 10000);
+      } catch (error) {
+        console.error('Error in simulation code:', error);
+        logToConsole('Error: ' + error.message);
+      }
+    }
+
+    function addObstacle() {
+      obstacles.push({
+        x: Math.random() * (canvas.width - 80) + 40,
+        y: Math.random() * (canvas.height - 80) + 40,
+        width: 40,
+        height: 40
+      });
+      updateSimulation();
+    }
+
+    function addGoal() {
+      goal = {
+        x: Math.random() * (canvas.width - 80) + 40,
+        y: Math.random() * (canvas.height - 80) + 40
+      };
+      updateSimulation();
+      logToConsole('Goal added. Robot will now try to reach it.');
+    }
+
+    function clearWorld() {
+      obstacles = [
+        {x: 0, y: 0, width: canvas.width, height: borderWidth},
+        {x: 0, y: canvas.height - borderWidth, width: canvas.width, height: borderWidth},
+        {x: 0, y: 0, width: borderWidth, height: canvas.height},
+        {x: canvas.width - borderWidth, y: 0, width: borderWidth, height: canvas.height}
+      ];
+      goal = null;
+      robotX = 400;
+      robotY = 300;
+      robotAngle = 0;
+      updateSimulation();
+      logToConsole('World cleared. Robot reset to center.');
+    }
+
+    function logToConsole(message) {
+      const consoleElement = document.getElementById('console');
+      consoleElement.innerHTML += message + '<br>';
+      consoleElement.scrollTop = consoleElement.scrollHeight;
+    }
+
+    updateSimulation();
+  </script>
+</body></html>
