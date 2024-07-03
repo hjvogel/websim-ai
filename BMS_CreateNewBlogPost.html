@@ -1,0 +1,123 @@
+<html><head><base href="https://websim.ai/blog/ly62vkxdorssdoiiasr/create"><title>Create a New Blog Post</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+
+body {
+  background: #eee;
+  font-family: "Roboto", sans-serif;
+  color: #444;
+  max-width: 960px;
+  margin: 100px auto;
+  padding: 10px;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+nav h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  background: #36cca2;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+nav a:hover {
+  background: #2da88a;
+}
+
+form {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h2 {
+  margin-top: 0;
+  color: #36cca2;
+}
+
+label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: 500;
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: "Roboto", sans-serif;
+}
+
+textarea {
+  min-height: 200px;
+  resize: vertical;
+}
+
+button {
+  background-color: #36cca2;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #2da88a;
+}
+</style>
+</head>
+<body>
+    <nav>
+        <h1>Blog Management System</h1>
+        <a href="../ly62vkxdorssdoiiasr">Back to Blogs</a>
+    </nav>
+
+    <form id="createBlogForm">
+        <h2>Create a New Blog Post</h2>
+        
+        <label for="title">Blog Title:</label>
+        <input type="text" id="title" name="title" required>
+        
+        <label for="content">Blog Content:</label>
+        <textarea id="content" name="content" required></textarea>
+        
+        <button type="submit">Create Blog Post</button>
+    </form>
+
+    <script>
+        document.getElementById('createBlogForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            
+            // In a real application, you would send this data to a server
+            // For this simulation, we'll just log it and redirect
+            console.log('New blog post:', { title, content });
+            
+            alert('Blog post created successfully!');
+            
+            // Redirect back to the main blog page
+            window.location.href = '../ly62vkxdorssdoiiasr';
+        });
+    </script>
+</body></html>

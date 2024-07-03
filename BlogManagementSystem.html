@@ -1,0 +1,184 @@
+<html><head><base href="../ly62vkxdorssdoiiasr"><title>Blog Management System</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+
+body {
+  background: #f5f5f5;
+  font-family: "Roboto", sans-serif;
+  color: #333;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #36cca2;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+nav h1 {
+  margin: 0;
+  color: white;
+  font-size: 24px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  background: #2da88a;
+  padding: 8px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+nav a:hover {
+  background: #238e73;
+}
+
+main {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h2 {
+  color: #36cca2;
+  border-bottom: 2px solid #36cca2;
+  padding-bottom: 10px;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+input[type="text"] {
+  width: 70%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+input[type="submit"] {
+  background-color: #36cca2;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+  background-color: #2da88a;
+}
+
+.post {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  transition: box-shadow 0.3s ease;
+}
+
+.post:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.post h3 {
+  margin: 0 0 10px 0;
+  color: #36cca2;
+}
+
+.post p {
+  margin: 0 0 15px 0;
+}
+
+.post a {
+  color: #36cca2;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.post a:hover {
+  color: #2da88a;
+}
+</style>
+</head>
+<body>
+    <nav>
+        <h1>Blog Management System</h1>
+        <a href="create">Add a new blog</a>
+    </nav>
+
+    <main>
+        <h2>All blogs</h2>
+        
+        <form id="searchForm">
+            <input type="text" name="query" placeholder="Search blogs">
+            <input type="submit" value="Search">
+        </form>
+
+        <div id="blog-list">
+            <!-- Blog posts will be dynamically inserted here -->
+        </div>
+    </main>
+
+    <script>
+        // Simulated blog data
+        let blogs = [
+            { id: 1, title: "DSPyGen: Streamlining AI Development", snippet: "Welcome to DSPyGen, a powerful command-line interface (CLI) designed to revolutionize AI development by leveraging DSPy modules..." },
+            { id: 2, title: "The Future of AI in Web Development", snippet: "As artificial intelligence continues to evolve, its impact on web development is becoming increasingly significant..." },
+            { id: 3, title: "Building Scalable Web Applications", snippet: "In today's digital landscape, creating web applications that can handle growth and increased demand is crucial..." }
+        ];
+
+        function displayBlogs(blogsToShow) {
+            const blogList = document.getElementById('blog-list');
+            blogList.innerHTML = '';
+            blogsToShow.forEach(blog => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post';
+                postElement.innerHTML = `
+                    <h3>${blog.title}</h3>
+                    <p>${blog.snippet}</p>
+                    <a href="details?id=${blog.id}">Read more</a>
+                `;
+                blogList.appendChild(postElement);
+            });
+        }
+
+        // Initial display of all blogs
+        displayBlogs(blogs);
+
+        // Search functionality
+        const searchForm = document.getElementById('searchForm');
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const searchQuery = this.query.value.toLowerCase();
+            const filteredBlogs = blogs.filter(blog => 
+                blog.title.toLowerCase().includes(searchQuery) || 
+                blog.snippet.toLowerCase().includes(searchQuery)
+            );
+            displayBlogs(filteredBlogs);
+        });
+
+        // Check for new blog post from localStorage
+        window.addEventListener('load', function() {
+            const newBlog = JSON.parse(localStorage.getItem('newBlog'));
+            if (newBlog) {
+                newBlog.id = blogs.length + 1;
+                blogs.unshift(newBlog);
+                displayBlogs(blogs);
+                localStorage.removeItem('newBlog');
+            }
+        });
+    </script>
+</body></html>

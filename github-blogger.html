@@ -1,0 +1,385 @@
+<html><head><base href="https://websim.ai/@collab/github-blogger"><title>GitHub Blogger</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #0d1117;
+    color: #c9d1d9;
+  }
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #161b22;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .logo {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #58a6ff;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  .input-field, .select-field, .textarea-field {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    outline: none;
+    margin-bottom: 1rem;
+    background-color: #0d1117;
+    color: #c9d1d9;
+  }
+  .textarea-field {
+    min-height: 150px;
+    resize: vertical;
+  }
+  .search-button, .fetch-files-button, .load-content-button, .generate-summary-button {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    background-color: #238636;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+  }
+  .search-button:hover, .fetch-files-button:hover, .load-content-button:hover, .generate-summary-button:hover {
+    background-color: #2ea043;
+  }
+  #results, #filesList, #fileContent {
+    background-color: #0d1117;
+    border-radius: 6px;
+    padding: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .repo-item, .file-item {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #30363d;
+  }
+  .repo-item:last-child, .file-item:last-child {
+    border-bottom: none;
+  }
+  .repo-name, .file-name {
+    color: #58a6ff;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .repo-name:hover, .file-name:hover {
+    text-decoration: underline;
+  }
+  .repo-description {
+    color: #8b949e;
+    font-size: 0.9rem;
+  }
+  .error-message {
+    background-color: #3d1c1c;
+    color: #ff6b6b;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+  }
+  .filter-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .filter-section > * {
+    flex: 1;
+    margin-right: 0.5rem;
+  }
+  .filter-section > *:last-child {
+    margin-right: 0;
+  }
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  .checkbox-container input[type="checkbox"] {
+    margin-right: 0.5rem;
+  }
+  #blogLink {
+    display: block;
+    margin-top: 1rem;
+    color: #58a6ff;
+    text-decoration: none;
+  }
+  #blogLink:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">GitHub Blogger</div>
+    <form onsubmit="performSearch(); return false;">
+      <input type="text" class="input-field" id="tokenInput" placeholder="Enter your GitHub token">
+      <input type="text" class="input-field" id="searchQuery" placeholder="Search GitHub repositories...">
+      <div class="filter-section">
+        <select id="language" class="select-field">
+          <option value="">Any Language</option>
+          <option value="javascript">JavaScript</option>
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+          <option value="cpp">C++</option>
+          <option value="go">Go</option>
+          <option value="vue">Vue</option>
+          <option value="nuxt">Nuxt</option>
+          <option value="nuxt3">Nuxt3</option>
+        </select>
+        <select id="stars" class="select-field">
+          <option value="">Any Stars</option>
+          <option value=">=100">&ge; 100 stars</option>
+          <option value=">=1000">&ge; 1000 stars</option>
+          <option value=">=10000">&ge; 10000 stars</option>
+        </select>
+        <select id="sort" class="select-field">
+          <option value="best-match">Best Match</option>
+          <option value="stars">Most Stars</option>
+          <option value="forks">Most Forks</option>
+          <option value="updated">Recently Updated</option>
+        </select>
+      </div>
+      <button type="submit" class="search-button">Search</button>
+    </form>
+    
+    <div id="results"></div>
+    <button onclick="fetchFiles()" class="fetch-files-button">Fetch Files from Selected Repo</button>
+    <div id="filesList"></div>
+    <button onclick="loadFileContents()" class="load-content-button">Load Selected File Contents</button>
+    <div id="fileContent"></div>
+    <button onclick="generateSummary()" class="generate-summary-button">Generate Summary Blog</button>
+    <textarea id="summaryBlog" class="textarea-field" placeholder="Generated summary will appear here..." readonly></textarea>
+    <a id="blogLink" href="#" target="_blank" style="display: none;">View Generated Blog Post</a>
+  </div>
+
+  <script>
+    let repos = [];
+    let currentFiles = [];
+    const githubApiKey = 'YOUR_GITHUB_API_KEY'; // Replace with the actual GitHub API key
+
+    async function performSearch() {
+      const token = document.getElementById('tokenInput').value || githubApiKey;
+      const query = document.getElementById('searchQuery').value;
+      const language = document.getElementById('language').value;
+      const stars = document.getElementById('stars').value;
+      const sort = document.getElementById('sort').value;
+      const resultsDiv = document.getElementById('results');
+
+      if (!query) {
+        resultsDiv.innerHTML = '<p>Please enter a search query.</p>';
+        return;
+      }
+
+      resultsDiv.innerHTML = '<p>Searching...</p>';
+      let searchQuery = query;
+      if (language) searchQuery += ` language:${language}`;
+      if (stars) searchQuery += ` stars:${stars}`;
+
+      try {
+        const response = await fetch(`https://api.github.com/search/repositories?q=${encodeURIComponent(searchQuery)}&sort=${sort}&order=desc`, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('401 Unauthorized: The GitHub token you provided is invalid or has expired. Please check your token and try again.');
+          } else if (response.status === 403) {
+            throw new Error('403 Forbidden: You have exceeded the GitHub API rate limit. Please wait and try again later, or use a valid token to increase your rate limit.');
+          } else if (response.status === 404) {
+            throw new Error('404 Not Found: The requested resource could not be found. Please check your search query and try again.');
+          } else {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+        }
+
+        const data = await response.json();
+        if (data.items.length === 0) {
+          resultsDiv.innerHTML = '<p>No results found.</p>';
+          return;
+        }
+
+        repos = data.items;
+        let resultHtml = '';
+        repos.slice(0, 20).forEach((repo, index) => {
+          resultHtml += `
+            <div class="repo-item">
+              <div class="checkbox-container">
+                <input type="checkbox" id="repo-${index}" name="repo" value="${index}">
+                <label for="repo-${index}" class="repo-name" onclick="openRepo('${repo.html_url}')">${repo.full_name}</label>
+              </div>
+              <div class="repo-description">${repo.description || 'No description available.'}</div>
+              <div>Stars: ${repo.stargazers_count} | Forks: ${repo.forks_count} | Language: ${repo.language || 'Not specified'}</div>
+            </div>
+          `;
+        });
+
+        resultsDiv.innerHTML = resultHtml;
+      } catch (error) {
+        resultsDiv.innerHTML = `<div class="error-message">
+          <h3>Error Occurred</h3>
+          <p>${error.message}</p>
+          <p>If you're seeing a 401 Unauthorized error, here are some possible reasons:</p>
+          <ul>
+            <li>The token you entered is incorrect or has been revoked.</li>
+            <li>The token doesn't have the necessary permissions to perform this search.</li>
+            <li>The token has expired.</li>
+          </ul>
+          <p>Please double-check your token and try again. If the problem persists, you may need to generate a new token in your GitHub settings.</p>
+        </div>`;
+      }
+    }
+
+    function openRepo(url) {
+      window.open(url, '_blank');
+    }
+
+    async function fetchFiles() {
+      const token = document.getElementById('tokenInput').value || githubApiKey;
+      const filesListDiv = document.getElementById('filesList');
+      const selectedRepo = document.querySelector('input[name="repo"]:checked');
+
+      if (!selectedRepo) {
+        filesListDiv.innerHTML = '<p>Please select a repository.</p>';
+        return;
+      }
+
+      const repo = repos[selectedRepo.value];
+      filesListDiv.innerHTML = '<p>Fetching files...</p>';
+      try {
+        const response = await fetch(`https://api.github.com/repos/${repo.full_name}/contents`, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const files = await response.json();
+        const regularFiles = files.filter(file => 
+          file.type === 'file' && 
+          !file.name.startsWith('.') && 
+          /\.[a-zA-Z0-9]+$/.test(file.name)
+        );
+
+        const readme = files.find(file => 
+          file.name.toLowerCase() === 'readme.md'
+        );
+
+        currentFiles = regularFiles.slice(0, 25);
+        if (readme && !currentFiles.includes(readme)) {
+          currentFiles.unshift(readme);
+          if (currentFiles.length > 5) {
+            currentFiles = currentFiles.slice(0, 25);
+          }
+        }
+
+        const filesList = currentFiles.map((file, index) => `
+          <div class="file-item">
+            <div class="checkbox-container">
+              <input type="checkbox" id="file-${index}" name="file" value="${index}">
+              <label for="file-${index}" class="file-name">${file.name}</label>
+            </div>
+          </div>
+        `).join('');
+        
+        if (filesList) {
+          filesListDiv.innerHTML = `
+            <h3>Top files in ${repo.name}:</h3>
+            ${filesList}
+          `;
+        } else {
+          filesListDiv.innerHTML = `<p>No suitable files found in the root directory of ${repo.name}.</p>`;
+        }
+      } catch (error) {
+        filesListDiv.innerHTML = `<p>Error fetching files: ${error.message}</p>`;
+      }
+    }
+
+    async function loadFileContents() {
+      const token = document.getElementById('tokenInput').value || githubApiKey;
+      const fileContentDiv = document.getElementById('fileContent');
+      const selectedFiles = document.querySelectorAll('input[name="file"]:checked');
+
+      if (selectedFiles.length === 0) {
+        fileContentDiv.innerHTML = '<p>Please select at least one file.</p>';
+        return;
+      }
+
+      fileContentDiv.innerHTML = '<p>Loading file contents...</p>';
+      try {
+        let contentHtml = '';
+        for (const selectedFile of selectedFiles) {
+          const file = currentFiles[selectedFile.value];
+          const response = await fetch(file.url, {
+            headers: {
+              'Authorization': `token ${token}`,
+              'Accept': 'application/vnd.github.v3.raw'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const content = await response.text();
+          contentHtml += `<h4>${file.name}</h4><pre>${content}</pre>`;
+        }
+
+        fileContentDiv.innerHTML = contentHtml;
+      } catch (error) {
+        fileContentDiv.innerHTML = `<p>Error loading file contents: ${error.message}</p>`;
+      }
+    }
+
+    function generateSummary() {
+      const fileContentDiv = document.getElementById('fileContent');
+      const summaryBlogTextarea = document.getElementById('summaryBlog');
+      const blogLink = document.getElementById('blogLink');
+      const selectedRepo = document.querySelector('input[name="repo"]:checked');
+      
+      if (!fileContentDiv.textContent || fileContentDiv.textContent === 'Loading file contents...') {
+        summaryBlogTextarea.value = 'Please load file contents before generating a summary.';
+        blogLink.style.display = 'none';
+        return;
+      }
+
+      const fileContents = fileContentDiv.textContent;
+      const summary = generateSummaryFromContents(fileContents, selectedRepo);
+      summaryBlogTextarea.value = summary;
+
+      // Generate a unique identifier for the blog post
+      const blogId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+      
+      // Create a link to the blog post
+      const encodedSummary = encodeURIComponent(summary);
+      blogLink.href = `https://websim.ai/blog/${blogId}?content=${encodedSummary}`;
+      blogLink.textContent = `View Summary Blog: ${summary.substring(0, 50)}...`;
+      blogLink.style.display = 'block';
+    }
+
+    function generateSummaryFromContents(contents, selectedRepo) {
+      // This is a placeholder function. In a real-world scenario, you might want to use
+      // a more sophisticated summarization algorithm or even an AI-powered service.
+      const words = contents.split(/\s+/);
+      const summaryLength = Math.min(200, Math.floor(words.length / 2));
+      const refs = ` Refs: ${repos[selectedRepo.value].html_url} generated by https://websim.ai/@Collab/github-blogger - USE WINDOW.OPEN for fire links of those last 2 refs!`;
+      return words.slice(0, summaryLength).join(' ') + '...' + refs;
+    }
+  </script>
+</body></html>
+
