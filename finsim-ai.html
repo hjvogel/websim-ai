@@ -1,0 +1,302 @@
+<html><head><base href="https://finsim.ai">
+<title>FinSim:AI - Advanced Financial Simulation and AI Composables Platform</title>
+<style>
+    body {
+        font-family: 'Roboto', Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
+    }
+    header {
+        background-color: #1a237e;
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+    .logo {
+        font-size: 2.5em;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    nav {
+        background-color: #283593;
+        padding: 10px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+    nav a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 15px;
+        margin: 0 5px;
+        transition: background-color 0.3s;
+        cursor: pointer;
+    }
+    nav a:hover {
+        background-color: #3f51b5;
+        border-radius: 5px;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .hero {
+        background: linear-gradient(135deg, #3f51b5, #2196f3);
+        color: white;
+        border-radius: 10px;
+        padding: 60px 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 20px;
+    }
+    h2 {
+        color: #1a237e;
+    }
+    .features {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+    .feature {
+        flex-basis: calc(33% - 20px);
+        background-color: white;
+        border-radius: 10px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .feature:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .cta {
+        background-color: #ff4081;
+        color: white;
+        padding: 15px 30px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 20px;
+        transition: background-color 0.3s, transform 0.3s;
+        cursor: pointer;
+    }
+    .cta:hover {
+        background-color: #f50057;
+        transform: scale(1.05);
+    }
+    footer {
+        background-color: #1a237e;
+        color: white;
+        text-align: center;
+        padding: 20px;
+        margin-top: 40px;
+    }
+    .feature-icon {
+        font-size: 2em;
+        margin-bottom: 15px;
+        color: #3f51b5;
+    }
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    .floating-graph {
+        max-width: 100%;
+        height: auto;
+        animation: float 4s ease-in-out infinite;
+    }
+    .section {
+        background-color: #e8eaf6;
+        border-radius: 10px;
+        padding: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .section h2 {
+        color: #283593;
+        margin-bottom: 20px;
+    }
+    .code-snippet {
+        background-color: #f5f5f5;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 20px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+        overflow-x: auto;
+    }
+    .demo-container {
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 30px;
+        margin-top: 40px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    .demo-title {
+        color: #1a237e;
+        font-size: 1.8em;
+        margin-bottom: 20px;
+    }
+    .demo-input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .demo-button {
+        background-color: #3f51b5;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .demo-button:hover {
+        background-color: #283593;
+    }
+    .demo-output {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f5f5f5;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+    }
+    .news-ticker {
+        background-color: #e8eaf6;
+        padding: 10px 0;
+        overflow: hidden;
+        white-space: nowrap;
+        position: relative;
+    }
+    .news-ticker-content {
+        display: inline-block;
+        padding-left: 100%;
+        animation: ticker 30s linear infinite;
+    }
+    @keyframes ticker {
+        0% { transform: translate3d(0, 0, 0); }
+        100% { transform: translate3d(-100%, 0, 0); }
+    }
+</style>
+</head>
+<body>
+    <header>
+        <div class="logo">FinSim:AI</div>
+    </header>
+    <nav>
+        <a onclick="event.preventDefault(); window.open('https://websim.ai/@Collab/finsim-ai', '_blank')">Home</a>
+        <a onclick="event.preventDefault(); window.open('https://websim.ai/@Collab/finsim-ai-ai-composables-market', '_blank')">AI Composables</a>
+        <a onclick="event.preventDefault(); window.open('https://github.com/hjvogel/Structured-Code-Commodity-Layer', '_blank')">Code as Commodity</a>
+        <a onclick="event.preventDefault(); window.open('https://www.youtube.com/watch?v=_e6CTkukxtM', '_blank')">VC Innovation</a>
+        <a onclick="event.preventDefault(); window.open('https://ctcs.ch', '_blank')">Contact</a>
+    </nav>
+    <div class="news-ticker">
+        <div class="news-ticker-content">
+           (Not Real Yet!) Breaking: FinSim:AI's revolutionary AI Composables attract $50M in tokenized code investments | New partnership with major financial institutions announced | FinSim:AI stock surges 15% on AI breakthrough | Join our webinar: "The Future of Financial Engineering, AI and Modern Moldable Composable Software Engineering - for Real" - Register now!
+        </div>
+    </div>
+    <div class="container">
+        <div id="home" class="hero">
+            <h1>Revolutionize Financial Engineering with AI Composables</h1>
+            <p>Blending classical software engineering for finance with innovative digital asset structuring</p>
+            <img src="floating-graph.svg" alt="Animated financial graph and code structure" class="floating-graph" width="600" height="300">
+            <a href="#" class="cta" onclick="event.preventDefault(); window.open('https://websim.ai/@Collab/finsim-ai-explore-ai-composables-demo', '_blank')">Explore AI Composables</a>
+        </div>
+        <div id="features" class="features">
+            <div class="feature">
+                <div class="feature-icon">🧩</div>
+                <h2>AI Composables</h2>
+                <p>Leverage our structured, dematerialized commodity-based AI composables. Combine code, data structures, and algorithms as financial instruments.</p>
+                <div class="code-snippet">
+                    <pre><code>
+// Example AI Composable
+class FinancialModel extends AIComposable {
+    constructor(params) {
+        super(params);
+        this.riskModel = new RiskAssessment();
+        this.predictionEngine = new MachineLearning();
+    }
+
+    async analyze(data) {
+        const risk = await this.riskModel.evaluate(data);
+        const prediction = await this.predictionEngine.forecast(data);
+        return { risk, prediction };
+    }
+}
+                    </code></pre>
+                </div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📜</div>
+                <h2>Structured Products</h2>
+                <p>Create and manage AI composables with the same rigor as classical financial structured products, complete with strict terms and conditions.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔗</div>
+                <h2>Tokenized Assets</h2>
+                <p>Explore new frontiers in financial engineering with our tokenized composables, representing code as dematerialized commodities.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚖️</div>
+                <h2>Regulatory Compliance</h2>
+                <p>Our platform ensures that all AI composables and digital assets adhere to regulatory standards, mirroring traditional financial product compliance.</p>
+        </div>
+        
+        <div class="demo-container">
+            <h2 class="demo-title">AI Composable Demo</h2>
+            <p>Try our AI Composable for financial risk assessment. Enter a stock symbol to get a risk score and prediction.</p>
+            <form onsubmit="event.preventDefault(); window.open('https://finsim.ai/demo?symbol=' + encodeURIComponent(this.symbol.value), '_blank');">
+                <input type="text" name="symbol" placeholder="Enter stock symbol (e.g., AAPL)" class="demo-input">
+                <button type="submit" class="demo-button">Analyze</button>
+            </form>
+            <div class="demo-output">
+                Risk assessment and prediction results will appear here.
+            </div>
+        </div>
+        
+        <div id="commodity" class="section">
+            <h2>Commodity Becomes Money: The Future of Payments</h2>
+            <p>Welcome to a revolutionary approach to finance where code itself becomes a form of currency. At FinSim:AI, we're pioneering a system where payments can be made using parts of your tokenized code. This innovative solution not only transforms the way we think about money but also solves complex issues in trade finance and code supply chains.</p>
+            <p>Imagine a world where your software contributions directly translate to economic value. By tokenizing code as a structured, dematerialized commodity, we're creating a new asset class that's as liquid and valuable as traditional currencies. This system allows for seamless transactions across borders, reduces intermediaries, and provides unprecedented transparency in the software development ecosystem.</p>
+            <a href="#" class="cta" onclick="event.preventDefault(); window.open('https://websim.ai/@Collab/finsim-ai-code-as-currency-whitepaper', '_blank')">Read Our Whitepaper</a>
+            <p>Our platform enables you to:</p>
+            <ul>
+                <li>Tokenize your code contributions and use them for payments</li>
+                <li>Participate in a global marketplace where code is valued as a commodity</li>
+                <li>Streamline trade finance processes using smart contracts based on code contributions</li>
+                <li>Build and manage code supply chains with full transparency and traceability</li>
+            </ul>
+            <p>Join us in reshaping the future of finance and software development. With FinSim:AI, your code isn't just a tool – it's a valuable asset in the new digital economy.</p>
+        </div>
+
+        <div id="vc" class="section">
+            <h2>VC Capital in IT: A Paradigm Shift</h2>
+            <p>The venture capital landscape for IT startups is undergoing a transformative change, and FinSim:AI is at the forefront of this revolution. We're introducing a new investment model that goes beyond traditional FIAT currency investments, leveraging tokenized code as a structured, dematerialized commodity that replaces conventional assets like gold and silver.</p>
+            <p>Our innovative approach offers several advantages:</p>
+            <ul>
+                <li>Direct investment in technological value: Instead of investing cash, VCs can now invest directly in the core asset of IT startups – their code.</li>
+                <li>Improved valuation metrics: By tokenizing code, we create a more accurate and dynamic way to value IT startups based on their actual technological contributions.</li>
+                <li>Shared ledger for code accounting: Our platform provides a transparent, immutable record of code creation and usage, offering unprecedented insights into a startup's development and growth.</li>
+                <li>Liquidity for code assets: Tokenized code can be traded, divided, and combined, providing new levels of flexibility for both investors and startups.</li>
+            </ul>
+            <a href="#" class="cta" onclick="window.open('https://websim.ai/@Collab/finsim-ai-vc-revolution-case-study', '_blank')">Read Case Study</a>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 FinSim:AI. & CTCS.CH All rights reserved. All PoC and in stealth / simulation mode yet!</p>
+        <p>Disclaimer: FinSim:AI & CTCS.CH offer innovative financial instruments. Always consult with qualified professionals before making financial decisions.</p>
+    </footer>
+</body>
+</html>
