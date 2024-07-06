@@ -1,0 +1,135 @@
+<html><head><base href="https://websim.ai" />
+<title>Drag and Drop Moldable Development</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+  }
+  .feature {
+    background-color: #f0f8ff;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  .feature h2 {
+    color: #3498db;
+  }
+  .demo {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 20px;
+    margin-top: 30px;
+  }
+  .demo-area {
+    min-height: 200px;
+    border: 2px dashed #3498db;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  .component {
+    background-color: #ecf0f1;
+    border: 1px solid #bdc3c7;
+    border-radius: 3px;
+    padding: 5px 10px;
+    margin: 5px;
+    display: inline-block;
+    cursor: move;
+  }
+  .plugin-form {
+    margin-top: 20px;
+  }
+  .plugin-form input {
+    padding: 5px;
+    width: 200px;
+  }
+  .plugin-form button {
+    padding: 5px 10px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <h1>WebSim.ai - Drag and Drop Moldable Development</h1>
+  
+  <div class="feature">
+    <h2>Fully Composable Record of Run (RoR)</h2>
+    <p>Experience the power of moldable development with our innovative Record of Run (RoR) system. Every action you take is recorded, allowing for seamless reproduction and modification of your development process.</p>
+  </div>
+
+  <div class="feature">
+    <h2>Build New Websites or Plugins</h2>
+    <p>Unleash your creativity by building entirely new websites or extending existing ones with custom plugins. Our platform supports unlimited extensibility through the use of plugins.</p>
+  </div>
+
+  <div class="feature">
+    <h2>Plugin Integration</h2>
+    <p>Extend any site's functionality by simply adding <code>?plugin=@&lt;user&gt;/&lt;plugin&gt;</code> to the URL. This allows for seamless integration of community-created plugins and tools.</p>
+  </div>
+
+  <div class="demo">
+    <h3>Drag and Drop Demo</h3>
+    <div class="demo-area" id="demo-area">
+      <!-- Draggable components will be dropped here -->
+    </div>
+    <div>
+      <div class="component" draggable="true">Header</div>
+      <div class="component" draggable="true">Paragraph</div>
+      <div class="component" draggable="true">Image</div>
+      <div class="component" draggable="true">Button</div>
+    </div>
+  </div>
+
+  <div class="plugin-form">
+    <h3>Try a Plugin</h3>
+    <input type="text" id="plugin-input" placeholder="@user/plugin">
+    <button onclick="loadPlugin()">Load Plugin</button>
+  </div>
+
+  <script>
+    // Simple drag and drop functionality
+    const demoArea = document.getElementById('demo-area');
+    const components = document.querySelectorAll('.component');
+
+    components.forEach(component => {
+      component.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', e.target.innerText);
+      });
+    });
+
+    demoArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    demoArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const data = e.dataTransfer.getData('text');
+      const newElement = document.createElement('div');
+      newElement.textContent = data;
+      newElement.classList.add('component');
+      demoArea.appendChild(newElement);
+    });
+
+    // Updated plugin loading function
+    function loadPlugin() {
+      const pluginInput = document.getElementById('plugin-input');
+      const pluginName = encodeURIComponent(pluginInput.value);
+      const currentUrl = new URL(window.location.href);
+      const newUrl = new URL(currentUrl.origin + currentUrl.pathname);
+      newUrl.searchParams.set('plugin', pluginName);
+      window.open(newUrl.toString(), '_blank');
+    }
+  </script>
+</body></html>
