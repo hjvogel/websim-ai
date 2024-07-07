@@ -86,3 +86,13 @@ Feel free to reach out if you have any questions or suggestions. Enjoy exploring
 ### Next - FinSim-AI
 
 [FinSim AI Platform](https://websim.ai/@Collab/finsim-ai)
+
+Define best practice templates and composable structures for best one shot import & generation for single apps / extentions of exisitng apps - plugins, modular monoliths, fully composable architectures.
+
+Demonstrate, Search, Predict - initial DSPy idas applied > how to help AI on the optimal input side to best generate the outputs
+
+Why not auto-generate those repos with best practice sturctured HTML templates and READMEs plus Specs (Terms & Conditions) for each value chain?
+
+Templates, Templates, Templates ... and optimize outputs - structuring code & data!
+
+closing the loop to [Structured Code as a Commodity](https://github.com/hjvogel/Structured-Code-Commodity-Layer)
