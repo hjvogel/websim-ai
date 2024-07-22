@@ -1,428 +1,448 @@
 <html><head><base href="https://qix-arcade.retro.io/"><title>Qix Retro Arcade</title><style>
-body {
-  background-color: #000;
-  color: #0f0;
-  font-family: 'Press Start 2P', monospace;
-  margin: 0;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
-
-#game-container {
-  width: 456px;
-  height: 456px;
-  border: 4px solid #0f0;
-  position: relative;
-  overflow: hidden;
-  background-color: #000;
-}
-
-#play-area {
-  width: 95%;
-  height: 95%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: #004400;
-}
-
-#player {
-  width: 10px;
-  height: 10px;
-  background-color: #f00;
-  position: absolute;
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  z-index: 10;
-}
-
-#qix {
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 5;
-}
-
-.line {
-  background-color: #fff;
-  position: absolute;
-  z-index: 8;
-}
-
-.filled-area {
-  position: absolute;
-  background-color: #00BFFF;
-  z-index: 2;
-}
-
-#score, #area {
-  margin-top: 10px;
-  font-size: 18px;
-}
-
-#controls {
-  margin-top: 20px;
-  text-align: center;
-}
-
-button {
-  background-color: #0f0;
-  color: #000;
-  border: none;
-  padding: 10px 20px;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 16px;
-  cursor: pointer;
-  margin: 0 10px;
-}
-
-button:hover {
-  background-color: #0a0;
-}
-
-#direction-controls {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 5px;
-  margin-top: 20px;
-}
-
-#direction-controls button {
-  padding: 5px;
-  font-size: 12px;
-}
-
-@keyframes qixAnimation {
-  0% { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
-  25% { clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 0% 100%); }
-  50% { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
-  75% { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
-  100% { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
-}
-
-#qix {
-  background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff);
-  animation: qixAnimation 2s infinite;
-}
-</style></head>
-<body>
-  <h1>Qix Retro Arcade</h1>
-  <div id="game-container">
-    <div id="play-area"></div>
-    <div id="player"></div>
-    <div id="qix"></div>
-  </div>
-  <div id="score">Score: <span id="score-value">0</span></div>
-  <div id="area">Area Claimed: <span id="area-value">0</span>%</div>
-  <div id="controls">
-    <button id="start-btn">Start Game</button>
-    <button id="pause-btn">Pause</button>
-  </div>
-  <div id="direction-controls">
-    <button></button>
-    <button id="up-btn">↑</button>
-    <button></button>
-    <button id="left-btn">←</button>
-    <button></button>
-    <button id="right-btn">→</button>
-    <button></button>
-    <button id="down-btn">↓</button>
-    <button></button>
-  </div>
-
-  <script>
-    const player = document.getElementById('player');
-    const qix = document.getElementById('qix');
-    const gameContainer = document.getElementById('game-container');
-    const playArea = document.getElementById('play-area');
-    const scoreValue = document.getElementById('score-value');
-    const areaValue = document.getElementById('area-value');
-    const startBtn = document.getElementById('start-btn');
-    const pauseBtn = document.getElementById('pause-btn');
-    const upBtn = document.getElementById('up-btn');
-    const downBtn = document.getElementById('down-btn');
-    const leftBtn = document.getElementById('left-btn');
-    const rightBtn = document.getElementById('right-btn');
-
-    let score = 0;
-    let areaClaimed = 0;
-    let isGameRunning = false;
-    let playerX = 0;
-    let playerY = 0;
-    let qixX = 228;
-    let qixY = 228;
-    let qixSpeedX = 2.1;
-    let qixSpeedY = 2.1;
-    let isDrawing = false;
-    let drawingSpeed = 'fast';
-    let currentLine = null;
-    let drawPoints = [];
-    let playerDirection = 'right';
-    let playerSpeed = 2;
-    let filledAreas = [];
-    let activeLines = [];
-
-    function initializePlayerPosition() {
-      playerX = 0;
-      playerY = 0;
-      player.style.left = playerX + 'px';
-      player.style.top = playerY + 'px';
-      drawPoints = [{x: playerX, y: playerY}];
-    }
-
-    function movePlayer() {
-      if (!isGameRunning) return;
-      
-      let newX = playerX;
-      let newY = playerY;
-      
-      switch(playerDirection) {
-        case 'up':
-          newY -= playerSpeed;
-          break;
-        case 'down':
-          newY += playerSpeed;
-          break;
-        case 'left':
-          newX -= playerSpeed;
-          break;
-        case 'right':
-          newX += playerSpeed;
-          break;
+  body {
+    background-color: #000;
+    color: #0f0;
+    font-family: 'Press Start 2P', monospace;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  
+  #game-container {
+    width: 456px;
+    height: 456px;
+    border: 4px solid #0f0;
+    position: relative;
+    overflow: hidden;
+    background-color: #000;
+  }
+  
+  #play-area {
+    width: 95%;
+    height: 95%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #004400;
+  }
+  
+  #player {
+    width: 10px;
+    height: 10px;
+    background-color: #f00;
+    position: absolute;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    z-index: 10;
+  }
+  
+  #qix {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+  }
+  
+  .line {
+    background-color: #fff;
+    position: absolute;
+    z-index: 8;
+  }
+  
+  .filled-area {
+    position: absolute;
+    background-color: #00BFFF;
+    z-index: 2;
+  }
+  
+  #score, #area {
+    margin-top: 10px;
+    font-size: 18px;
+  }
+  
+  #controls {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  button {
+    background-color: #0f0;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+  }
+  
+  button:hover {
+    background-color: #0a0;
+  }
+  
+  #direction-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 20px;
+  }
+  
+  #direction-controls button {
+    padding: 5px;
+    font-size: 12px;
+  }
+  
+  @keyframes qixAnimation {
+    0% { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+    25% { clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 0% 100%); }
+    50% { clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%); }
+    75% { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+    100% { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+  }
+  
+  #qix {
+    background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff);
+    animation: qixAnimation 2s infinite;
+  }
+  </style></head>
+  <body>
+    <h1>Qix Retro Arcade</h1>
+    <div id="game-container">
+      <div id="play-area"></div>
+      <div id="player"></div>
+      <div id="qix"></div>
+    </div>
+    <div id="score">Score: <span id="score-value">0</span></div>
+    <div id="area">Area Claimed: <span id="area-value">0</span>%</div>
+    <div id="controls">
+      <button id="start-btn">Start Game</button>
+      <button id="pause-btn">Pause</button>
+    </div>
+    <div id="direction-controls">
+      <button></button>
+      <button id="up-btn">↑</button>
+      <button></button>
+      <button id="left-btn">←</button>
+      <button></button>
+      <button id="right-btn">→</button>
+      <button></button>
+      <button id="down-btn">↓</button>
+      <button></button>
+    </div>
+  
+    <script>
+      const player = document.getElementById('player');
+      const qix = document.getElementById('qix');
+      const gameContainer = document.getElementById('game-container');
+      const playArea = document.getElementById('play-area');
+      const scoreValue = document.getElementById('score-value');
+      const areaValue = document.getElementById('area-value');
+      const startBtn = document.getElementById('start-btn');
+      const pauseBtn = document.getElementById('pause-btn');
+      const upBtn = document.getElementById('up-btn');
+      const downBtn = document.getElementById('down-btn');
+      const leftBtn = document.getElementById('left-btn');
+      const rightBtn = document.getElementById('right-btn');
+  
+      let score = 0;
+      let areaClaimed = 0;
+      let isGameRunning = false;
+      let playerX = 0;
+      let playerY = 0;
+      let qixX = 228;
+      let qixY = 228;
+      let qixSpeedX = 2.1;
+      let qixSpeedY = 2.1;
+      let isDrawing = false;
+      let drawingSpeed = 'fast';
+      let currentLine = null;
+      let drawPoints = [];
+      let playerDirection = 'right';
+      let playerSpeed = 1;
+      let filledAreas = [];
+      let activeLines = [];
+  
+      function initializePlayerPosition() {
+        playerX = 0;
+        playerY = 0;
+        player.style.left = playerX + 'px';
+        player.style.top = playerY + 'px';
+        drawPoints = [{x: playerX, y: playerY}];
       }
-      
-      // Check if hit border
-      if (newX < 0) newX = 0;
-      if (newX > 433) newX = 433;
-      if (newY < 0) newY = 0;
-      if (newY > 433) newY = 433;
-      
-      if (newX !== playerX || newY !== playerY) {
-        drawLine(playerX, playerY, newX, newY);
-        drawPoints.push({x: newX, y: newY});
+  
+      function movePlayer() {
+        if (!isGameRunning) return;
+        
+        let newX = playerX;
+        let newY = playerY;
+        
+        switch(playerDirection) {
+          case 'up':
+          if (!isInFilledArea(newX,newY -playerSpeed)) newY -= playerSpeed;
+            break;
+          case 'down':
+          if (!isInFilledArea(newX,newY +playerSpeed))  newY += playerSpeed;
+            break;
+          case 'left':
+          if (!isInFilledArea(newX -playerSpeed ,newY))  newX -= playerSpeed;
+            break;
+          case 'right':
+          if (!isInFilledArea(newX +playerSpeed ,newY)) newX += playerSpeed;
+            break;
+        }
+        // Check if hit border - check || isInFilledArea(newQixX, newQixY))
+        // x >= area.left && x <= area.right && y >= area.top && y <= area.bottom
+        if (newX < 0 ) newX = 0;
+        if (newX > 433) newX = 433;
+        if (newY < 0) newY = 0;
+        if (newY > 433) newY = 433;
+        
+        if (newX !== playerX || newY !== playerY) {
+          drawLine(playerX, playerY, newX, newY);
+          drawPoints.push({x: newX, y: newY});
+        }
+        
+        playerX = newX;
+        playerY = newY;
+        
+        player.style.left = playerX + 'px';
+        player.style.top = playerY + 'px';
+        
+        checkCollision();
+        checkAreaCompletion();
       }
-      
-      playerX = newX;
-      playerY = newY;
-      
-      player.style.left = playerX + 'px';
-      player.style.top = playerY + 'px';
-      
-      checkCollision();
-      checkAreaCompletion();
-    }
-
-    function changeDirection(direction) {
-      playerDirection = direction;
-      isDrawing = true;
-    }
-
-    function drawLine(startX, startY, endX, endY) {
-      const line = document.createElement('div');
-      line.className = 'line';
-      line.style.left = Math.min(startX, endX) + 'px';
-      line.style.top = Math.min(startY, endY) + 'px';
-      line.style.width = Math.abs(endX - startX) + 1 + 'px';
-      line.style.height = Math.abs(endY - startY) + 1 + 'px';
-      playArea.appendChild(line);
-      currentLine = line;
-      activeLines.push({
-        left: parseInt(line.style.left),
-        top: parseInt(line.style.top),
-        right: parseInt(line.style.left) + parseInt(line.style.width),
-        bottom: parseInt(line.style.top) + parseInt(line.style.height)
-      });
-    }
-
-    function moveQix() {
-      if (!isGameRunning) return;
-      
-      // Random direction change
-      if (Math.random() < 0.05) {
-        qixSpeedX = (Math.random() - 0.5) * 4.2;
-        qixSpeedY = (Math.random() - 0.5) * 4.2;
+  
+      function changeDirection(direction) {
+        playerDirection = direction;
+        isDrawing = true;
       }
-      
-      let newQixX = qixX + qixSpeedX;
-      let newQixY = qixY + qixSpeedY;
-      
-      // Bounce off walls and filled areas
-      if (newQixX <= 0 || newQixX >= 416 || isInFilledArea(newQixX, newQixY)) {
-        qixSpeedX *= -1;
-        newQixX = qixX;
+  
+      function drawLine(startX, startY, endX, endY) {
+        const line = document.createElement('div');
+        line.className = 'line';
+        line.style.left = Math.min(startX, endX) + 'px';
+        line.style.top = Math.min(startY, endY) + 'px';
+        line.style.width = Math.abs(endX - startX) + 1 + 'px';
+        line.style.height = Math.abs(endY - startY) + 1 + 'px';
+        playArea.appendChild(line);
+        currentLine = line;
+        activeLines.push({
+          left: parseInt(line.style.left),
+          top: parseInt(line.style.top),
+          right: parseInt(line.style.left) + parseInt(line.style.width),
+          bottom: parseInt(line.style.top) + parseInt(line.style.height)
+        });
       }
-      if (newQixY <= 0 || newQixY >= 416 || isInFilledArea(newQixX, newQixY)) {
-        qixSpeedY *= -1;
-        newQixY = qixY;
+  
+      function moveQix() {
+        if (!isGameRunning) return;
+        
+        // Random direction change
+        if (Math.random() < 0.05) {
+          qixSpeedX = (Math.random() - 0.5) * .4;
+          qixSpeedY = (Math.random() - 0.5) * .4;
+        }
+        
+        let newQixX = qixX + qixSpeedX;
+        let newQixY = qixY + qixSpeedY;
+        
+        // Bounce off walls and filled areas
+        if (newQixX <= 0 || newQixX >= 416 || isInFilledArea(newQixX, newQixY)) {
+          qixSpeedX *= -1;
+          newQixX = qixX;
+        }
+        if (newQixY <= 0 || newQixY >= 416 || isInFilledArea(newQixX, newQixY)) {
+          qixSpeedY *= -1;
+          newQixY = qixY;
+        }
+        
+        qixX = newQixX;
+        qixY = newQixY;
+        
+        qix.style.left = qixX + 'px';
+        qix.style.top = qixY + 'px';
+        
+        checkCollision();
       }
-      
-      qixX = newQixX;
-      qixY = newQixY;
-      
-      qix.style.left = qixX + 'px';
-      qix.style.top = qixY + 'px';
-      
-      checkCollision();
-    }
-
-    function isInFilledArea(x, y) {
-      return filledAreas.some(area => 
-        x >= area.left && x <= area.right && y >= area.top && y <= area.bottom
-      );
-    }
-
-    function checkCollision() {
-      // Check collision with Qix
-      if (isDrawing && Math.abs(playerX - qixX) < 20 && Math.abs(playerY - qixY) < 20) {
-        gameOver();
+  
+      function isInFilledArea(x, y) {
+        return filledAreas.some(area => 
+          x >= area.left && x <= area.right && y >= area.top && y <= area.bottom
+        );
       }
-      
-      // Check if Qix touches active lines
-      for (let line of activeLines) {
-        if (qixX >= line.left && qixX <= line.right && 
-            qixY >= line.top && qixY <= line.bottom) {
+  
+      function checkCollision() {
+        // Check collision with Qix
+        if (isDrawing && Math.abs(playerX - qixX) < 20 && Math.abs(playerY - qixY) < 20) {
           gameOver();
         }
+        
+        // Check if Qix touches active lines
+        for (let line of activeLines) {
+          if (qixX >= line.left && qixX <= line.right && 
+              qixY >= line.top && qixY <= line.bottom) {
+            gameOver();
+          }
+        }
       }
-    }
-
-    function checkAreaCompletion() {
-      if (drawPoints.length > 1 && 
-          (playerX === 0 || playerX === 433 || playerY === 0 || playerY === 433)) {
-        fillArea();
+  
+      function checkAreaCompletion() {
+        if (drawPoints.length > 1 && 
+            (playerX === 0 || playerX === 433 || playerY === 0 || playerY === 433) || isInFilledArea(playerX, playerY) ) {
+          fillArea();
+        }
       }
-    }
-
-    function fillArea() {
-      const filledArea = document.createElement('div');
-      filledArea.className = 'filled-area';
-      
-      // Calculate the area to fill based on the draw points
-      const leftMost = Math.min(...drawPoints.map(p => p.x));
-      const rightMost = Math.max(...drawPoints.map(p => p.x));
-      const topMost = Math.min(...drawPoints.map(p => p.y));
-      const bottomMost = Math.max(...drawPoints.map(p => p.y));
-      
-      // Check if Qix is inside the area to be filled
-      if (qixX >= leftMost && qixX <= rightMost && qixY >= topMost && qixY <= bottomMost) {
-        // If Qix is inside, don't fill the area
+  
+      // only fill the area from the correct line draw conture - inside to the closed boaerder where Qix is NOT INSINDE - fix this
+      function fillArea() {
+        const filledArea = document.createElement('div');
+        filledArea.className = 'filled-area';
+        
+        // Calculate the area to fill based on the draw points
+        let leftMost = Math.min(...drawPoints.map(p => p.x));
+        let rightMost = Math.max(...drawPoints.map(p => p.x));
+        let topMost = Math.min(...drawPoints.map(p => p.y));
+        let bottomMost = Math.max(...drawPoints.map(p => p.y));
+        console.log("Fill area topMost" +topMost);
+        console.log("area leftMost " + leftMost);
+        console.log("area rightMost " + rightMost);
+  
+        console.log("Qix  area qixX " + qixX);
+        console.log("Qix  area qixY " + qixY);
+  
+        // Check if Qix is inside the area to be filled
+        if (qixX >= leftMost && qixX <= rightMost && qixY >= topMost && qixY <= bottomMost) {
+          // If Qix is inside, don't fill this  area but all the rest that is not filled
+          // Needs a fix - it does not work
+          console.log("Qix inside area leftMost " + leftMost);
+          console.log("Qix inside area rightMost " + rightMost);
+          if (qixX >= leftMost) {
+            rightMost = leftMost;
+            leftMost = 0;
+          }
+          if (qixX <= rightMost) {
+            lefttMost = rightMost;
+            rightMost = 0;
+          }
+          if (qixX >= topMost) {
+            rightMost = topMost;
+            topMost = 0;
+          }
+          if (qixX <= bottomMost) {
+            topMost = bottomMost;
+            bottomMost = 0;
+          }
+        }
+        
+        filledArea.style.left = leftMost + 'px';
+        filledArea.style.top = topMost + 'px';
+        filledArea.style.width = (rightMost - leftMost) + 'px';
+        filledArea.style.height = (bottomMost - topMost) + 'px';
+        
+        console.log("pusht " , leftMost, rightMost, topMost, bottomMost);
+        playArea.appendChild(filledArea);
+        
+        // Add to filled areas array - shrink it by the draw line thickness to run still the player around it
+        filledAreas.push({
+          left: leftMost +1,
+          right: rightMost -1,
+          top: topMost +1,
+          bottom: bottomMost - 1
+        });
+        
+        // Update score and area claimed
+        const areaGained = (rightMost - leftMost) * (bottomMost - topMost);
+        areaClaimed += areaGained / 1975.68; // Total area is 433 * 433
+        if (areaClaimed > 100) areaClaimed = 100;
+        areaValue.textContent = Math.floor(areaClaimed);
+        score += areaGained;
+        scoreValue.textContent = score;
+        
+        // Reset drawing
         activeLines = [];
         drawPoints = [{x: playerX, y: playerY}];
         const lines = document.querySelectorAll('.line');
-        lines.forEach(line => line.remove());
         isDrawing = false;
-        return;
       }
-      
-      filledArea.style.left = leftMost + 'px';
-      filledArea.style.top = topMost + 'px';
-      filledArea.style.width = (rightMost - leftMost) + 'px';
-      filledArea.style.height = (bottomMost - topMost) + 'px';
-      
-      playArea.appendChild(filledArea);
-      
-      // Add to filled areas array
-      filledAreas.push({
-        left: leftMost,
-        right: rightMost,
-        top: topMost,
-        bottom: bottomMost
+  
+      function gameOver() {
+        isGameRunning = false;
+        alert('Game Over! Your score: ' + score);
+        resetGame();
+      }
+  
+      function resetGame() {
+        score = 0;
+        areaClaimed = 0;
+        scoreValue.textContent = score;
+        areaValue.textContent = areaClaimed;
+        qixX = 228;
+        qixY = 228;
+        qix.style.left = qixX + 'px';
+        qix.style.top = qixY + 'px';
+        
+        // Remove all lines and filled areas
+        const lines = document.querySelectorAll('.line');
+        lines.forEach(line => line.remove());
+        const filledAreaElements = document.querySelectorAll('.filled-area');
+        filledAreaElements.forEach(area => area.remove());
+        filledAreas = [];
+        activeLines = [];
+  
+        initializePlayerPosition();
+        playerDirection = 'right';
+        isDrawing = false;
+      }
+  
+      function startGame() {
+        isGameRunning = true;
+        gameLoop();
+      }
+  
+      function pauseGame() {
+        isGameRunning = !isGameRunning;
+        if (isGameRunning) gameLoop();
+      }
+  
+      function gameLoop() {
+        if (!isGameRunning) return;
+        movePlayer();
+        moveQix();
+        requestAnimationFrame(gameLoop);
+      }
+  
+      upBtn.addEventListener('click', () => changeDirection('up'));
+      downBtn.addEventListener('click', () => changeDirection('down'));
+      leftBtn.addEventListener('click', () => changeDirection('left'));
+      rightBtn.addEventListener('click', () => changeDirection('right'));
+  
+      document.addEventListener('keydown', (e) => {
+        switch(e.key) {
+          case 'ArrowUp':
+            changeDirection('up');
+            break;
+          case 'ArrowDown':
+            changeDirection('down');
+            break;
+          case 'ArrowLeft':
+            changeDirection('left');
+            break;
+          case 'ArrowRight':
+            changeDirection('right');
+            break;
+        }
       });
-      
-      // Update score and area claimed
-      const areaGained = (rightMost - leftMost) * (bottomMost - topMost);
-      areaClaimed += areaGained / 1975.68; // Total area is 433 * 433
-      if (areaClaimed > 100) areaClaimed = 100;
-      areaValue.textContent = Math.floor(areaClaimed);
-      score += areaGained;
-      scoreValue.textContent = score;
-      
-      // Reset drawing
-      activeLines = [];
-      drawPoints = [{x: playerX, y: playerY}];
-      const lines = document.querySelectorAll('.line');
-      lines.forEach(line => line.remove());
-      isDrawing = false;
-    }
-
-    function gameOver() {
-      isGameRunning = false;
-      alert('Game Over! Your score: ' + score);
-      resetGame();
-    }
-
-    function resetGame() {
-      score = 0;
-      areaClaimed = 0;
-      scoreValue.textContent = score;
-      areaValue.textContent = areaClaimed;
-      qixX = 228;
-      qixY = 228;
-      qix.style.left = qixX + 'px';
-      qix.style.top = qixY + 'px';
-      
-      // Remove all lines and filled areas
-      const lines = document.querySelectorAll('.line');
-      lines.forEach(line => line.remove());
-      const filledAreaElements = document.querySelectorAll('.filled-area');
-      filledAreaElements.forEach(area => area.remove());
-      filledAreas = [];
-      activeLines = [];
-
+  
+      startBtn.addEventListener('click', startGame);
+      pauseBtn.addEventListener('click', pauseGame);
+  
       initializePlayerPosition();
-      playerDirection = 'right';
-      isDrawing = false;
-    }
-
-    function startGame() {
-      isGameRunning = true;
-      gameLoop();
-    }
-
-    function pauseGame() {
-      isGameRunning = !isGameRunning;
-      if (isGameRunning) gameLoop();
-    }
-
-    function gameLoop() {
-      if (!isGameRunning) return;
-      movePlayer();
-      moveQix();
-      requestAnimationFrame(gameLoop);
-    }
-
-    upBtn.addEventListener('click', () => changeDirection('up'));
-    downBtn.addEventListener('click', () => changeDirection('down'));
-    leftBtn.addEventListener('click', () => changeDirection('left'));
-    rightBtn.addEventListener('click', () => changeDirection('right'));
-
-    document.addEventListener('keydown', (e) => {
-      switch(e.key) {
-        case 'ArrowUp':
-          changeDirection('up');
-          break;
-        case 'ArrowDown':
-          changeDirection('down');
-          break;
-        case 'ArrowLeft':
-          changeDirection('left');
-          break;
-        case 'ArrowRight':
-          changeDirection('right');
-          break;
-      }
-    });
-
-    startBtn.addEventListener('click', startGame);
-    pauseBtn.addEventListener('click', pauseGame);
-
-    initializePlayerPosition();
-  </script>
-</body></html>
+    </script>
+  </body></html>
