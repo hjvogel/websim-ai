@@ -1,0 +1,690 @@
+<html>
+<head>
+  <base href="https://websim.dev/second-brain/">
+  <title>Second Brain - Business, Tech, and Science Insights</title>
+  <style>
+    body, html {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+      height: 100%;
+      overflow: hidden;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .dashboard-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+    .message-pane {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background-color: #fff;
+      border-left: 1px solid #ddd;
+      display: none;
+    }
+    .dashboard {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: space-around;
+    }
+    .tile {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      width: calc(33.333% - 1rem);
+      min-width: 250px;
+      max-width: 400px;
+      position: relative;
+    }
+    .tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      margin: 1rem;
+    }
+    .search-bar input {
+      width: 60%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #bdc3c7;
+      border-radius: 4px;
+    }
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 1rem;
+    }
+    .tag {
+      color: white;
+      font-size: 0.8rem;
+      margin: 0.25rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, opacity 0.3s ease;
+    }
+    .tag:hover {
+      filter: brightness(90%);
+    }
+    .tag.inactive {
+      opacity: 0.5;
+    }
+    .import-section {
+      text-align: center;
+      margin: 1rem;
+    }
+    #fileInput {
+      display: none;
+    }
+    .import-btn, .expand-btn {
+      background-color: #2ecc71;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    .import-btn:hover, .expand-btn:hover {
+      background-color: #27ae60;
+    }
+    .timestamp {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      margin-top: 0.5rem;
+    }
+    .last-worked {
+      display: flex;
+      justify-content: center;
+      margin: 1rem;
+    }
+    .last-worked-btn {
+      background-color: #e74c3c;
+      color: white;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin: 0 0.5rem;
+      transition: background-color 0.3s ease;
+    }
+    .last-worked-btn:hover {
+      background-color: #c0392b;
+    }
+    .messages {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .expand-btn {
+      background-color: #3498db;
+      margin-top: 1rem;
+    }
+    .expand-btn:hover {
+      background-color: #2980b9;
+    }
+    h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: #2c3e50;
+    }
+    p {
+      line-height: 1.6;
+      margin-bottom: 0.5rem;
+    }
+    .sub-tile {
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      padding: 0.75rem;
+      margin-top: 0.75rem;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .load-more-btn {
+      display: block;
+      margin: 1rem auto;
+      background-color: #3498db;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    .load-more-btn:hover {
+      background-color: #2980b9;
+    }
+    .message-content {
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .message-role {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .close-pane {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.3s ease;
+    }
+    .close-pane:hover {
+      background-color: #c0392b;
+    }
+    .tile-tags {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .tile-tag {
+      color: white;
+      font-size: 0.7rem;
+      margin: 0.25rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 10px;
+    }
+    .edit-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #f39c12;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .edit-btn:hover {
+      background-color: #e67e22;
+    }
+    .edit-form {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .edit-form input, .edit-form textarea {
+      width: 100%;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #bdc3c7;
+      border-radius: 4px;
+    }
+    .edit-form button {
+      background-color: #2ecc71;
+      color: white;
+      padding: 0.5rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    .edit-form button:hover {
+      background-color: #27ae60;
+    }
+    .delete-btn {
+      background-color: #e74c3c;
+      margin-top: 0.5rem;
+    }
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+    pre {
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #f0f0f0;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Second Brain - Business, Tech, and Science Insights</h1>
+    </header>
+
+    <div class="content">
+      <div class="dashboard-container">
+        <div class="search-bar">
+          <input type="text" placeholder="Search insights...">
+        </div>
+
+        <div class="tag-cloud">
+          <!-- Tags will be dynamically added here -->
+        </div>
+
+        <div class="last-worked">
+          <button class="last-worked-btn" data-project="Project A">Project A</button>
+          <button class="last-worked-btn" data-project="Project B">Project B</button>
+          <button class="last-worked-btn" data-project="Project C">Project C</button>
+        </div>
+
+        <div class="import-section">
+          <input type="file" id="fileInput" accept=".json">
+          <button class="import-btn" onclick="document.getElementById('fileInput').click()">Import OpenAI Chat Export</button>
+        </div>
+
+        <main class="dashboard">
+          <!-- Tiles will be dynamically added here -->
+        </main>
+
+        <button class="load-more-btn" style="display: none;">Load More</button>
+      </div>
+
+      <div class="message-pane">
+        <button class="close-pane">&times;</button>
+        <h2 id="message-pane-title"></h2>
+        <div id="message-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      const dashboard = document.querySelector('.dashboard');
+      const searchInput = document.querySelector('.search-bar input');
+      const fileInput = document.getElementById('fileInput');
+      const lastWorkedButtons = document.querySelectorAll('.last-worked-btn');
+      const loadMoreBtn = document.querySelector('.load-more-btn');
+      const messagePane = document.querySelector('.message-pane');
+      const messagePaneTitle = document.getElementById('message-pane-title');
+      const messageContent = document.getElementById('message-content');
+      const closePaneBtn = document.querySelector('.close-pane');
+      const tagCloud = document.querySelector('.tag-cloud');
+      let importedConversations = [];
+      let currentIndex = 0;
+      let allTags = new Set();
+      let activeTags = new Set();
+
+      const tagColors = {
+        'FinTech': '#3498db',
+        'RegTech': '#2ecc71',
+        'TradeTech': '#e74c3c',
+        'AI': '#9b59b6',
+        'Blockchain': '#f1c40f',
+        'Compliance': '#34495e',
+        'Vector Database': '#1abc9c',
+        'LLM': '#d35400',
+        'ESG': '#27ae60',
+        'API': '#c0392b',
+        'Cybersecurity': '#7f8c8d',
+        'Analytics': '#16a085',
+        'Machine Learning': '#8e44ad',
+        'DeFi': '#f39c12',
+        'Cloud Computing': '#2980b9',
+        'Biometrics': '#e67e22',
+        'Smart Contracts': '#95a5a6',
+        'Code': '#3498db'
+      };
+
+      function getTagColor(tag) {
+        if (tagColors[tag]) {
+          return tagColors[tag];
+        } else {
+          // Generate a random color for new tags
+          const randomColor = Math.floor(Math.random()*16777215).toString(16);
+          tagColors[tag] = "#" + randomColor;
+          return tagColors[tag];
+        }
+      }
+
+      function createTile(title, timestamp, messages) {
+        const newTile = document.createElement('div');
+        newTile.className = 'tile';
+        
+        const tags = extractTags(title, messages);
+        const tagsHTML = tags.map(tag => `<span class="tile-tag" style="background-color: ${getTagColor(tag)}">${tag}</span>`).join('');
+        
+        newTile.innerHTML = `
+          <h3>${title}</h3>
+          <div class="timestamp">${timestamp}</div>
+          <div class="tile-tags">${tagsHTML}</div>
+          <button class="expand-btn">Expand</button>
+          <button class="edit-btn">Edit</button>
+          <div class="edit-form">
+            <input type="text" class="edit-title" value="${title}">
+            <input type="text" class="edit-tags" value="${tags.join(', ')}">
+            <button class="save-edit-btn">Save</button>
+            <button class="delete-btn">Delete</button>
+          </div>
+        `;
+        
+        const expandBtn = newTile.querySelector('.expand-btn');
+        expandBtn.addEventListener('click', () => {
+          showMessages(title, messages);
+        });
+
+        const editBtn = newTile.querySelector('.edit-btn');
+        const editForm = newTile.querySelector('.edit-form');
+        const saveEditBtn = newTile.querySelector('.save-edit-btn');
+        const deleteBtn = newTile.querySelector('.delete-btn');
+
+        editBtn.addEventListener('click', () => {
+          editForm.style.display = editForm.style.display === 'none' || editForm.style.display === '' ? 'flex' : 'none';
+        });
+
+        saveEditBtn.addEventListener('click', () => {
+          const newTitle = newTile.querySelector('.edit-title').value;
+          const newTags = newTile.querySelector('.edit-tags').value.split(',').map(tag => tag.trim());
+          const newDescription = newTile.querySelector('.edit-description').value.split('\n').map(content => ({ role: 'user', content }));
+
+          newTile.querySelector('h3').textContent = newTitle;
+          newTile.querySelector('.tile-tags').innerHTML = newTags.map(tag => `<span class="tile-tag" style="background-color: ${getTagColor(tag)}">${tag}</span>`).join('');
+          messages.length = 0;
+          newDescription.forEach(msg => messages.push(msg));
+
+          allTags.clear();
+          document.querySelectorAll('.tile').forEach(tile => {
+            const tileTags = Array.from(tile.querySelectorAll('.tile-tag')).map(tag => tag.textContent);
+            tileTags.forEach(tag => allTags.add(tag));
+          });
+
+          updateTagCloud();
+          editForm.style.display = 'none';
+        });
+
+        deleteBtn.addEventListener('click', () => {
+          dashboard.removeChild(newTile);
+          allTags.clear();
+          document.querySelectorAll('.tile').forEach(tile => {
+            const tileTags = Array.from(tile.querySelectorAll('.tile-tag')).map(tag => tag.textContent);
+            tileTags.forEach(tag => allTags.add(tag));
+          });
+          updateTagCloud();
+        });
+
+        return newTile;
+      }
+
+      function extractTags(title, messages) {
+        const keywords = [
+          "FinTech", "RegTech", "TradeTech", "AI", "Blockchain", "Compliance",
+          "Vector Database", "LLM", "ESG", "API", "Cybersecurity", "Analytics",
+          "Machine Learning", "DeFi", "Cloud Computing", "Biometrics", "Smart Contracts"
+        ];
+        
+        const content = title + ' ' + messages.map(m => m.content).join(' ');
+        const foundTags = keywords.filter(keyword => 
+          content.toLowerCase().includes(keyword.toLowerCase())
+        );
+        
+        // Check if any message contains code
+        const containsCode = messages.some(message => 
+          message.content.includes('```') || 
+          message.content.includes('```python') ||
+          message.content.includes('```javascript') ||
+          message.content.includes('```java') ||
+          message.content.includes('```c++') ||
+          message.content.includes('```ruby') ||
+          message.content.includes('```php')
+        );
+        
+        if (containsCode) {
+          foundTags.push('Code');
+        }
+        
+        // Add new tags to allTags set
+        foundTags.forEach(tag => allTags.add(tag));
+        
+        // Update tag cloud
+        updateTagCloud();
+        
+        return foundTags.slice(0, 3); // Return only up to 3 tags
+      }
+
+      function updateTagCloud() {
+        tagCloud.innerHTML = '';
+        allTags.forEach(tag => {
+          const tagElement = document.createElement('span');
+          tagElement.className = 'tag';
+          tagElement.textContent = tag;
+          tagElement.style.backgroundColor = getTagColor(tag);
+          tagElement.addEventListener('click', () => toggleTag(tag, tagElement));
+          if (!activeTags.has(tag)) {
+            tagElement.classList.add('inactive');
+          }
+          tagCloud.appendChild(tagElement);
+        });
+      }
+
+      function toggleTag(tag, tagElement) {
+        if (activeTags.has(tag)) {
+          activeTags.delete(tag);
+          tagElement.classList.add('inactive');
+        } else {
+          activeTags.add(tag);
+          tagElement.classList.remove('inactive');
+        }
+        filterTiles();
+      }
+
+      function filterTiles() {
+        const tiles = dashboard.querySelectorAll('.tile');
+        tiles.forEach(tile => {
+          const tileTags = Array.from(tile.querySelectorAll('.tile-tag')).map(tag => tag.textContent);
+          if (activeTags.size === 0 || tileTags.some(tag => activeTags.has(tag))) {
+            tile.style.display = 'block';
+          } else {
+            tile.style.display = 'none';
+          }
+        });
+      }
+
+      function showMessages(title, messages) {
+        messagePaneTitle.textContent = title;
+        messageContent.innerHTML = '';
+
+        messages.forEach(message => {
+          const messageDiv = document.createElement('div');
+          messageDiv.className = 'message-content';
+          
+          let formattedContent = message.content;
+          
+          // Check for code blocks and format them
+          const codeBlockRegex = /```(\w*)\n([\s\S]*?)```/g;
+          formattedContent = formattedContent.replace(codeBlockRegex, (match, language, code) => {
+            return `<pre><code class="language-${language}">${code.trim()}</code></pre>`;
+          });
+          
+          // Format inline code
+          const inlineCodeRegex = /`([^`]+)`/g;
+          formattedContent = formattedContent.replace(inlineCodeRegex, '<code>$1</code>');
+          
+          messageDiv.innerHTML = `
+            <div class="message-role">${message.role}</div>
+            <div>${formattedContent}</div>
+          `;
+          messageContent.appendChild(messageDiv);
+        });
+
+        messagePane.style.display = 'block';
+      }
+
+      closePaneBtn.addEventListener('click', () => {
+        messagePane.style.display = 'none';
+      });
+
+      searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const tiles = dashboard.querySelectorAll('.tile');
+
+        tiles.forEach(tile => {
+          const content = tile.textContent.toLowerCase();
+          if (content.includes(searchTerm)) {
+            tile.style.display = 'block';
+          } else {
+            tile.style.display = 'none';
+          }
+        });
+      });
+
+      // JSON importer functionality
+      fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const jsonData = JSON.parse(e.target.result);
+              processOpenAIExport(jsonData);
+            } catch (error) {
+              console.error('Error parsing JSON:', error);
+              alert('Error parsing the file. Please check the console for more details.');
+            }
+          };
+          reader.readAsText(file);
+        }
+      });
+
+      function processOpenAIExport(data) {
+        if (!Array.isArray(data)) {
+          console.error('Invalid JSON structure: Expected an array');
+          alert('Invalid JSON structure. Please make sure it\'s a valid OpenAI chat export.');
+          return;
+        }
+
+        importedConversations = data.filter(conversation => 
+          typeof conversation === 'object' && conversation !== null && conversation.title
+        ).map(conversation => ({
+          title: conversation.title,
+          timestamp: conversation.create_time ? new Date(conversation.create_time * 1000).toLocaleString() : 'N/A',
+          messages: conversation.mapping ? Object.values(conversation.mapping)
+            .filter(msg => msg.message && msg.message.content && msg.message.content.parts)
+            .map(msg => ({
+              role: msg.message.author.role,
+              content: msg.message.content.parts.join('\n')
+            })) : []
+        }));
+
+        currentIndex = 0;
+        loadMoreTiles();
+      }
+
+      function loadMoreTiles() {
+        const tilesToAdd = Math.min(50, importedConversations.length - currentIndex);
+        
+        for (let i = 0; i < tilesToAdd; i++) {
+          const conversation = importedConversations[currentIndex + i];
+          dashboard.appendChild(createTile(conversation.title, conversation.timestamp, conversation.messages));
+        }
+
+        currentIndex += tilesToAdd;
+
+        if (currentIndex < importedConversations.length) {
+          loadMoreBtn.style.display = 'block';
+        } else {
+          loadMoreBtn.style.display = 'none';
+        }
+      }
+
+      loadMoreBtn.addEventListener('click', loadMoreTiles);
+
+      // Last worked buttons functionality
+      lastWorkedButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          const projectName = button.dataset.project;
+          dashboard.insertBefore(
+            createTile(`Last Worked: ${projectName}`, new Date().toLocaleString(), []),
+            dashboard.firstChild
+          );
+        });
+      });
+
+      // Add 30 sample tiles
+      const sampleTitles = [
+        "FinTech Revolution: AI-Powered Trading Algorithms",
+        "RegTech Innovations in Anti-Money Laundering",
+        "TradeTech: Blockchain for Cross-Border Transactions",
+        "AI in Compliance: Automating Risk Assessment",
+        "Vector Databases: Enhancing Financial Data Analysis",
+        "LLMs in Financial Advisory: Personalized Investment Strategies",
+        "Vectorpedia: Building a Knowledge Graph for Finance",
+        "ESG Compliance: AI-Driven Sustainability Reporting",
+        "Open Banking APIs: Revolutionizing Financial Services",
+        "Robo-Advisors: The Future of Wealth Management",
+        "Cybersecurity in FinTech: Protecting Digital Assets",
+        "Alternative Data in Financial Decision Making",
+        "Predictive Analytics for Market Trends",
+        "Natural Language Processing in Financial Document Analysis",
+        "Decentralized Finance (DeFi): Opportunities and Risks",
+        "AI Ethics in Financial Services",
+        "Cloud Computing for Financial Institutions",
+        "Biometric Authentication in Banking",
+        "Machine Learning for Fraud Detection",
+        "Regulatory Sandbox: Fostering FinTech Innovation",
+        "Digital Identity Verification in Financial Services",
+        "Smart Contracts in Insurance Claims Processing",
+        "AI-Powered Customer Service in Banking",
+        "Algorithmic Trading: Strategies and Regulations",
+        "Big Data Analytics in Risk Management",
+        "Blockchain for Supply Chain Finance",
+        "Robotic Process Automation in Back-Office Operations",
+        "AI in Credit Scoring and Loan Approval",
+        "Tokenization of Assets: New Investment Opportunities"
+      ];
+
+      sampleTitles.forEach(title => {
+        dashboard.appendChild(createTile(title, new Date().toLocaleString(), []));
+      });
+
+      // Initial update of tag cloud
+      updateTagCloud();
+    });
+  </script>
+</body>
+</html>
